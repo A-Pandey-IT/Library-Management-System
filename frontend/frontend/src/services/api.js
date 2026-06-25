@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
     baseURL:
-        "http://localhost:5000/"
+        "https://library-management-backend-ozvk.onrender.com/"
 });
 
 api.interceptors.request.use(
