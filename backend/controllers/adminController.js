@@ -3,23 +3,31 @@ const db = require("../config/db");
 
 const jwt = require("jsonwebtoken");
 
+const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+
 const registerAdmin = async (req, res) => {
     try {
         const { username, password } = req.body;
+        const usernameValue = username?.trim();
+        const passwordValue = password?.trim();
 
-        if (!username || !password) {
+        if (!usernameValue || !passwordValue) {
             return res.status(400).json({
                 success: false,
                 message: "Username and password are required"
             });
         }
 
-        if (password.length < 6) {
+        if (!passwordRegex.test(passwordValue)) {
+
             return res.status(400).json({
-                success: false,
-                message: "Password must be at least 6 characters"
-            });
-        }
+            success: false,
+            message:
+                "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+        });
+
+}
 
         const [existing] = await db.query(
             `
@@ -27,7 +35,7 @@ const registerAdmin = async (req, res) => {
             FROM admins
             WHERE username = ?
             `,
-            [username.trim()]
+            [usernameValue]
         );
 
         if (existing.length > 0) {
@@ -37,7 +45,7 @@ const registerAdmin = async (req, res) => {
             });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(passwordValue, 10);
 
         const [result] = await db.query(
             `
@@ -49,7 +57,7 @@ const registerAdmin = async (req, res) => {
             VALUES (?, ?)
             `,
             [
-                username.trim(),
+                usernameValue,
                 hashedPassword
             ]
         );
@@ -59,7 +67,7 @@ const registerAdmin = async (req, res) => {
             message: "Admin registered successfully",
             data: {
                 adminId: result.insertId,
-                username: username.trim()
+                username: usernameValue
             }
         });
 
@@ -177,11 +185,24 @@ const changePassword = async (req, res) => {
             });
         }
 
-        if (newPassword.length < 6) {
+        if (currentPassword === newPassword) {
+
             return res.status(400).json({
                 success: false,
-                message: "New password must be at least 6 characters"
+                message:
+                    "New password must be different from the current password."
             });
+
+        }
+
+        if (!passwordRegex.test(newPassword)) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+            });
+
         }
 
         const [rows] = await db.query(
