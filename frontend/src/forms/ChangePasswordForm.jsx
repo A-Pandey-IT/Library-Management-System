@@ -6,6 +6,7 @@ function ChangePasswordForm({ onBack }) {
     const [formData, setFormData] = useState({
         currentPassword: "",
         newPassword: "",
+        confirmPassword: "",
     });
 
     const [loading, setLoading] = useState(false);
@@ -16,26 +17,69 @@ function ChangePasswordForm({ onBack }) {
     const [showNewPassword, setShowNewPassword] =
         useState(false);
 
+    const [showConfirmPassword, setShowConfirmPassword] =
+        useState(false);
+
+    const validatePassword = (password) => {
+        return {
+            minLength: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /\d/.test(password),
+            specialChar:
+                /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        };
+    };
+
+    const passwordRules = validatePassword(
+        formData.newPassword
+    );
+
+    const isPasswordValid = Object.values(
+        passwordRules
+    ).every(Boolean);
+
+    const passwordsMatch =
+        formData.newPassword ===
+        formData.confirmPassword;
+
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
+        setFormData((prev) => ({
+            ...prev,
             [e.target.name]: e.target.value,
-        });
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!isPasswordValid) {
+            alert(
+                "Password does not meet all security requirements."
+            );
+            return;
+        }
+
+        if (!passwordsMatch) {
+            alert("Passwords do not match.");
+            return;
+        }
 
         try {
             setLoading(true);
 
             await api.put(
                 "/admin/change-password",
-                formData
+                {
+                    currentPassword:
+                        formData.currentPassword,
+                    newPassword:
+                        formData.newPassword,
+                }
             );
 
             alert(
-                "Password changed successfully. Please Login again."
+                "Password changed successfully. Please login again."
             );
 
             localStorage.removeItem("token");
@@ -46,12 +90,25 @@ function ChangePasswordForm({ onBack }) {
         } catch (error) {
             alert(
                 error.response?.data?.message ||
-                "Failed"
+                    "Failed to update password."
             );
         } finally {
             setLoading(false);
         }
     };
+
+    const PasswordToggle = ({
+        show,
+        setShow,
+    }) => (
+        <button
+            type="button"
+            onClick={() => setShow(!show)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+        >
+            {show ? <FaEyeSlash /> : <FaEye />}
+        </button>
+    );
 
     return (
         <form
@@ -70,24 +127,16 @@ function ChangePasswordForm({ onBack }) {
                     placeholder="Current Password"
                     value={formData.currentPassword}
                     onChange={handleChange}
+                    required
                     className="border p-3 rounded w-full pr-12"
                 />
 
-                <button
-                    type="button"
-                    onClick={() =>
-                        setShowCurrentPassword(
-                            !showCurrentPassword
-                        )
+                <PasswordToggle
+                    show={showCurrentPassword}
+                    setShow={
+                        setShowCurrentPassword
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                >
-                    {showCurrentPassword ? (
-                        <FaEyeSlash />
-                    ) : (
-                        <FaEye />
-                    )}
-                </button>
+                />
             </div>
 
             {/* New Password */}
@@ -102,30 +151,123 @@ function ChangePasswordForm({ onBack }) {
                     placeholder="New Password"
                     value={formData.newPassword}
                     onChange={handleChange}
+                    required
                     className="border p-3 rounded w-full pr-12"
                 />
 
-                <button
-                    type="button"
-                    onClick={() =>
-                        setShowNewPassword(
-                            !showNewPassword
-                        )
-                    }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                >
-                    {showNewPassword ? (
-                        <FaEyeSlash />
-                    ) : (
-                        <FaEye />
-                    )}
-                </button>
+                <PasswordToggle
+                    show={showNewPassword}
+                    setShow={setShowNewPassword}
+                />
             </div>
+
+            {/* Password Rules */}
+            <div className="text-sm space-y-1">
+                <p
+                    className={
+                        passwordRules.minLength
+                            ? "text-green-600"
+                            : "text-red-500"
+                    }
+                >
+                    ✓ Minimum 8 characters
+                </p>
+
+                <p
+                    className={
+                        passwordRules.uppercase
+                            ? "text-green-600"
+                            : "text-red-500"
+                    }
+                >
+                    ✓ At least one uppercase letter
+                </p>
+
+                <p
+                    className={
+                        passwordRules.lowercase
+                            ? "text-green-600"
+                            : "text-red-500"
+                    }
+                >
+                    ✓ At least one lowercase letter
+                </p>
+
+                <p
+                    className={
+                        passwordRules.number
+                            ? "text-green-600"
+                            : "text-red-500"
+                    }
+                >
+                    ✓ At least one number
+                </p>
+
+                <p
+                    className={
+                        passwordRules.specialChar
+                            ? "text-green-600"
+                            : "text-red-500"
+                    }
+                >
+                    ✓ At least one special character
+                </p>
+            </div>
+
+            {/* Confirm Password */}
+            <div className="relative">
+                <input
+                    type={
+                        showConfirmPassword
+                            ? "text"
+                            : "password"
+                    }
+                    name="confirmPassword"
+                    placeholder="Confirm New Password"
+                    value={
+                        formData.confirmPassword
+                    }
+                    onChange={handleChange}
+                    required
+                    className="border p-3 rounded w-full pr-12"
+                />
+
+                <PasswordToggle
+                    show={showConfirmPassword}
+                    setShow={
+                        setShowConfirmPassword
+                    }
+                />
+            </div>
+
+            {formData.confirmPassword && (
+                <p
+                    className={
+                        passwordsMatch
+                            ? "text-green-600 text-sm"
+                            : "text-red-500 text-sm"
+                    }
+                >
+                    {passwordsMatch
+                        ? "Passwords match"
+                        : "Passwords do not match"}
+                </p>
+            )}
 
             <button
                 type="submit"
-                disabled={loading}
-                className="bg-green-600 text-white py-3 rounded"
+                disabled={
+                    loading ||
+                    !isPasswordValid ||
+                    !passwordsMatch
+                }
+                className={`py-3 rounded text-white ${
+                    loading ||
+                    !isPasswordValid ||
+                    !passwordsMatch
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700"
+                }`}
             >
                 {loading
                     ? "Updating..."
