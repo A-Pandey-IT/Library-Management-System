@@ -67,7 +67,7 @@ A full-stack **Library Management System** built using **React, Node.js, Express
 ```text
 Library-Management-System
 │
-├── frontend/frontend 
+├── frontend
 │   ├── src
 │   ├── public
 │   └── package.json
