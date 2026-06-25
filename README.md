@@ -112,15 +112,53 @@ npm run dev
 
 ## 📸 Screenshots
 
-> Screenshots will be added soon.
+📸 Screenshots
 
-* Home Dashboard
-* Login
-* Users
-* Books
-* Issues
-* Transactions
-* Purchase
+### Guest Dashboard
+
+![Guest Dashboard](screenshots/guest-dashboard.png)
+
+---
+
+### Login
+
+![Login](screenshots/login.png)
+
+---
+
+### Admin Dashboard
+
+![Admin Dashboard](screenshots/admin-dashboard.png)
+
+---
+
+### Users
+
+![Users](screenshots/users.png)
+
+---
+
+### Books
+
+![Books](screenshots/books.png)
+
+---
+
+### Issues
+
+![Issues](screenshots/issues.png)
+
+---
+
+### Transactions
+
+![Transactions](screenshots/transactions.png)
+
+---
+
+### Purchase
+
+![Purchase](screenshots/purchase.png)
 
 ---
 
