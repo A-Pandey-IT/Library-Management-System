@@ -30,7 +30,12 @@ require("./routes/dashboardRoutes");
 
 const app = express();
 
-app.use(cors());
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL || "*",
+        credentials: true
+    })
+);
 app.use(express.json());
 
 app.use("/students", studentRoutes);
@@ -64,9 +69,6 @@ db.getConnection()
             error.message
         );
     });
-
-console.log("PORT:", process.env.PORT);
-console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
 app.listen(process.env.PORT, () => {
     console.log(
