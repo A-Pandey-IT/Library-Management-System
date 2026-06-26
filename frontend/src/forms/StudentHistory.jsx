@@ -93,21 +93,22 @@ function StudentHistory({
                             <p>
                                 Issue:
                                 {" "}
-                                {item.issue_date}
+                                {new Date(item.issue_date).toLocaleString("en-IN")}
                             </p>
 
                             <p>
                                 Due:
                                 {" "}
-                                {item.due_date}
+                                {new Date(item.due_date).toLocaleDateString("en-IN")}
                             </p>
 
                             <p>
                                 Return:
                                 {" "}
                                 {
-                                    item.return_date ||
-                                    "Not Returned"
+                                    item.return_date 
+                                    ? new Date(item.return_date).toLocaleDateString("en-IN")
+                                    : "Not Returned"
                                 }
                             </p>
 
