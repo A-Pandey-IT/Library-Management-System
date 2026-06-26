@@ -13,7 +13,7 @@ api.interceptors.request.use(
                 "token"
             );
 
-        console.log("Token: ", token);
+        
 
         if (token) {
 
