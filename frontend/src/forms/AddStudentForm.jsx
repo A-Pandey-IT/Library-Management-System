@@ -107,7 +107,7 @@ function AddStudentForm({
             <input
                 type="text"
                 name="name"
-                placeholder="Student Name"
+                placeholder="Member Name"
                 value={
                     formData.name
                 }

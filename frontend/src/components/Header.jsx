@@ -67,6 +67,7 @@ function Header({
                 <h1
                     className="
                         text-xl
+                        sm:text-lg
                         font-bold
                         text-amber-50                        
                     "
@@ -92,6 +93,8 @@ function Header({
                                 flex
                                 items-center
                                 gap-2
+                                sm:gap-2
+                                sm:flex-row
                                 bg-gradient-to-r
                                 from-pink-600
                                 to-red-400
