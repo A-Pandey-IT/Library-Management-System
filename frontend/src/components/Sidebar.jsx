@@ -13,11 +13,14 @@ import {
 } from "react-icons/fa";
 
 function Sidebar({
-     isOpen,
+    isOpen,
     isLoggedIn,
+    userType,
+    role,
     setActivePage,
     logout,
     onLogin,
+    onMemberLogin,
     closeSidebar
 }) {
 
@@ -62,7 +65,8 @@ function Sidebar({
         >
 
             {
-        isOpen && (
+        isOpen && 
+        (
             <div
                 className="
                     fixed
@@ -174,7 +178,9 @@ function Sidebar({
                 </li>
 
                 {
-                    isLoggedIn && (
+                    isLoggedIn && 
+                    userType === "staff" &&
+                    (
 
                         <li
                             onClick={() =>{
@@ -207,6 +213,7 @@ function Sidebar({
 
                 {
                     isLoggedIn &&
+                    userType === "staff" &&
                     (<li
                         onClick={() =>{
                             setActivePage(
@@ -257,7 +264,11 @@ function Sidebar({
                             mr-2
                         "
                     />
-                    Issues
+                    {
+                        userType === "member"
+                        ? "My Issues"
+                        : "Issues"
+                    }
                 </li>
 
                 <li
@@ -283,11 +294,16 @@ function Sidebar({
                             mr-2
                         "
                     />
-                    Transactions
+                    {
+                        userType === "member"
+                        ? "My Transactions"
+                        : "Transactions"
+                    }
                 </li>
 
                 {
                     isLoggedIn &&
+                    userType === "staff" &&
                     (<li
                         onClick={() => {
                             setActivePage(
@@ -349,7 +365,7 @@ function Sidebar({
 
                         <li
                             onClick={logout}
-                                className="
+                            className="
                                 cursor-pointer
                                 px-3
                                 py-2
@@ -365,41 +381,87 @@ function Sidebar({
                                     mr-2
                                 "
                             />
-                                Logout
-                            </li>
+                            Logout
+                        </li>
 
                     ) : (
 
-                        <li
-                            onClick={() => {
+                        <>
 
-                                onLogin?.();
+                            <li
+                                onClick={() => {
 
-                                closeSidebar();
+                                    onLogin?.();
 
-                            }}
-                           className="
-                                cursor-pointer
-                                px-3
-                                py-2
-                                rounded-lg
-                                hover:shadow-[0px_0px_10px_rgba(255,255,255,0.5)]
-                                transition-all
-                                duration-200
-                            "
-                        >
-                            <FaSignOutAlt
+                                    closeSidebar();
+
+                                }}
                                 className="
-                                    inline
-                                    mr-2
+                                    cursor-pointer
+                                    px-3
+                                    py-2
+                                    rounded-lg
+                                    hover:shadow-[0px_0px_10px_rgba(255,255,255,0.5)]
+                                    transition-all
+                                    duration-200
                                 "
-                            />
-                            Login
-                        </li>
+                            >
+                                <FaSignOutAlt
+                                    className="
+                                        inline
+                                        mr-2
+                                    "
+                                />
+                                Staff Login
+                            </li>
+
+                            <li
+                                onClick={() => {
+
+                                    onMemberLogin?.();
+
+                                    closeSidebar();
+
+                                }}
+                                className="
+                                    cursor-pointer
+                                    px-3
+                                    py-2
+                                    rounded-lg
+                                    hover:shadow-[0px_0px_10px_rgba(255,255,255,0.5)]
+                                    transition-all
+                                    duration-200
+                                "
+                            >
+                                <FaSignOutAlt
+                                    className="
+                                        inline
+                                        mr-2
+                                    "
+                                />
+                                Member Login
+                            </li>
+
+                        </>
 
                     )
                 }
 
+                {
+
+                    role === "LIBRARIAN" && (
+
+                        <li
+                            onClick={() => {
+                                setActivePage("admins");
+                                closeSidebar();
+                            }}
+                            className="..."
+                        >
+                            Admin Management
+                        </li>
+                    )
+                }
             </ul>
 
         </div>

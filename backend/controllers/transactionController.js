@@ -85,7 +85,7 @@ const getTransactionById = async (req, res) => {
         });
         
     } catch(error){
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Error fetching transaction",
             error: error.message
@@ -123,8 +123,12 @@ const getTransactionsByStudent = async (req, res) => {
 
         const values = [];
 
-        if(id && (!Number.isInteger(Number(id))) ||
-            Number(id) <= 0
+        if (
+            id &&
+            (
+                !Number.isInteger(Number(id)) ||
+                Number(id) <= 0
+            )
         ) {
             return res.status(400).json({
                 success: false,
@@ -199,8 +203,12 @@ const getTransactionsByBook = async (req, res) => {
 
         const values = [];
 
-        if(id && (!Number.isInteger(Number(id))) ||
-            Number(id)<= 0
+        if (
+            id &&
+            (
+                !Number.isInteger(Number(id)) ||
+                Number(id) <= 0
+            )
         ) {
             return res.status(400).json({
                 success: false,
@@ -270,7 +278,7 @@ const getTransactionsByType = async (req, res) => {
         const [rows] = await db.query(
             `
             SELECT
-                t.id,
+                t.id AS transaction_id,
                 s.id AS student_id,
                 s.name AS student_name,
                 b.id AS book_id,
@@ -278,9 +286,9 @@ const getTransactionsByType = async (req, res) => {
                 t.transaction_type,
                 t.transaction_date
             FROM transactions t
-            LEFT JOIN students s
+            INNER JOIN students s
                 ON t.student_id = s.id
-            LEFT JOIN books b
+            INNER JOIN books b
                 ON t.book_id = b.id
             WHERE t.transaction_type = ?
             ORDER BY t.transaction_date DESC
@@ -291,14 +299,14 @@ const getTransactionsByType = async (req, res) => {
         if(rows.length === 0){
             return res.status(404).json({
                 success: false,
-                message: "No transaction found",
+                message: "No transactions found",
             });
         }
 
         return res.status(200).json({
             success: true,
             count: rows.length,
-            message: "Transaction fetched successfully",
+            message: "Transactions fetched successfully",
             data: rows
         });
 

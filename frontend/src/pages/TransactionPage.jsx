@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import api from "../services/api";
 
-function TransactionPage() {
+function TransactionPage({
+    userType
+}) {
 
 const [transactions, setTransactions] =
     useState([]);
@@ -30,11 +32,15 @@ const fetchTransactions =
 
             const response =
                 await api.get(
-                    "/transaction"
+                    userType === "member"
+                        ? "/member/transactions"
+                        : "/transaction"
                 );
 
             setTransactions(
-                response.data.data || []
+                userType === "member"
+                    ? response.data.transactions 
+                    : response.data.data 
             );
 
         } catch(error){
@@ -218,7 +224,11 @@ return (
                 mb-6
             "
         >
-            TRANSACTIONS
+            {
+                userType === "member" 
+                    ? "My Transactions"
+                    : "TRANSACTIONS"
+            }
         </h2>
 
         <div
@@ -329,126 +339,139 @@ return (
 
         </div>
 
-        <div
-            className="
-                grid
-                md:grid-cols-2
-                gap-4
-                mb-6
-            "
-        >
+        {   
+            userType !== "member" &&(
 
             <div
                 className="
-                    flex
-                    gap-2
+                    grid
+                    md:grid-cols-2
+                    gap-4
+                    mb-6
                 "
             >
-
-                <input
-                    type="text"
-                    placeholder="
-                        Student Name or ID
-                    "
-                    value={
-                        studentSearch
-                    }
-                    onChange={(e)=>
-                        setStudentSearch(
-                            e.target.value
-                        )
-                    }
+            
+            
+    
+                <div
                     className="
-                        flex-1
-                        border
-                        rounded
-                        px-4
-                        py-2
-
-                        dark:bg-gray-800
-                    "
-                />
-
-                <button
-                    onClick={
-                        searchByStudent
-                    }
-                    className="
-                        bg-blue-600
-                        text-white
-                        px-4
-                        rounded
+                        flex
+                        gap-2
                     "
                 >
-                    Search
-                </button>
+
+                    <input
+                        type="text"
+                        placeholder="
+                            Student Name or ID
+                        "
+                        value={
+                            studentSearch
+                        }
+                        onChange={(e)=>
+                            setStudentSearch(
+                                e.target.value
+                            )
+                        }
+                        className="
+                            flex-1
+                            border
+                            rounded
+                            px-4
+                            py-2
+
+                            dark:bg-gray-800
+                        "
+                    />
+
+                    <button
+                        onClick={
+                            searchByStudent
+                        }
+                        className="
+                            bg-blue-600
+                            text-white
+                            px-4
+                            rounded
+                        "
+                    >
+                        Search
+                    </button>
+
+                </div>
+            
+
+                <div
+                    className="
+                        flex
+                        gap-2
+                    "
+                >
+
+                    <input
+                        type="text"
+                        placeholder="
+                            Book Title or ID
+                        "
+                        value={
+                            bookSearch
+                        }
+                        onChange={(e)=>
+                            setBookSearch(
+                                e.target.value
+                            )
+                        }
+                        className="
+                            flex-1
+                            border
+                            rounded
+                            px-4
+                            py-2
+
+                            dark:bg-gray-800
+                        "
+                    />
+
+                    <button
+                        onClick={
+                            searchByBook
+                        }
+                        className="
+                            bg-green-600
+                            text-white
+                            px-4
+                            rounded
+                        "
+                    >
+                        Search
+                    </button>
+
+                </div>
+                
+            
 
             </div>
+                )
+        }
 
-            <div
+        {
+            userType !== "member" &&
+            <button
+                onClick={
+                    fetchTransactions
+                }
                 className="
-                    flex
-                    gap-2
+                    mb-6
+                    bg-gray-700
+                    text-white
+                    px-4
+                    py-2
+                    rounded
                 "
             >
-
-                <input
-                    type="text"
-                    placeholder="
-                        Book Title or ID
-                    "
-                    value={
-                        bookSearch
-                    }
-                    onChange={(e)=>
-                        setBookSearch(
-                            e.target.value
-                        )
-                    }
-                    className="
-                        flex-1
-                        border
-                        rounded
-                        px-4
-                        py-2
-
-                        dark:bg-gray-800
-                    "
-                />
-
-                <button
-                    onClick={
-                        searchByBook
-                    }
-                    className="
-                        bg-green-600
-                        text-white
-                        px-4
-                        rounded
-                    "
-                >
-                    Search
-                </button>
-
-            </div>
-
-        </div>
-
-        <button
-            onClick={
-                fetchTransactions
-            }
-            className="
-                mb-6
-                bg-gray-700
-                text-white
-                px-4
-                py-2
-                rounded
-            "
-        >
-            Show All Transactions
-        </button>
+                Show All Transactions
+            </button>
+        }
 
         <div
             className="
@@ -479,9 +502,13 @@ return (
                             ID
                         </th>
 
-                        <th className="p-4 text-left">
-                            Student
-                        </th>
+                        {
+                            userType !== "member" && (
+                                <th className="p-4 text-left">
+                                    Student
+                                </th>
+                            )
+                        }
 
                         <th className="p-4 text-left">
                             Book
@@ -507,7 +534,7 @@ return (
 
                                 <tr
                                     key={
-                                        transaction.id
+                                        transaction.transaction_id
                                     }
                                     className="
                                         border-b
@@ -517,21 +544,28 @@ return (
 
                                     <td className="p-4">
                                         {
-                                            transaction.id
+                                            transaction.transaction_id
                                         }
                                     </td>
 
-                                    <td className="p-4">
-                                        {
-                                            transaction.student_name
-                                        }
-                                    </td>
+                                    {
+                                        userType !== "member" && (
+                                            <td className="p-4">
+                                                {
+                                                    transaction.student_name
+                                                }
+                                            </td>
+                                        )
+                                    }
 
+                                    
                                     <td className="p-4">
                                         {
                                             transaction.book_title
                                         }
                                     </td>
+                                        
+                                    
 
                                     <td className="p-4">
                                         {

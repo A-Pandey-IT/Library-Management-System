@@ -3,6 +3,8 @@ import api from "../services/api";
 import ActionsDropdown from "../components/ActionsDropdown";
 
 function IssuesPage({
+    userType,
+    refreshData,
     onReturnBook
 }) {
 
@@ -43,13 +45,17 @@ function IssuesPage({
 
                 const response =
                     await api.get(
-                        "/issues"
+                        userType === "member"
+                            ? "/member/issues"
+                            : "/issues"
                     );
 
                 const data =
-                    response.data.data || [];
-
+                    userType === "member"
+                        ?response.data.issues || []
+                        :response.data.data || [];
                 setIssues(data);
+
                 setFilteredIssues(data);
 
                 calculateStats(data);
@@ -195,7 +201,11 @@ function IssuesPage({
                     mb-6
                 "
             >
-                ISSUES
+                {
+                    userType === "member"
+                        ? "My Issues"
+                        : "Issues"
+                }
             </h2>
 
             {/* Cards */}
@@ -234,33 +244,38 @@ function IssuesPage({
 
             {/* Search */}
 
-            <input
-                type="text"
-                placeholder="
-Search by Issue ID,
-Student ID,
-Student Name,
-Book ID,
-Book Title,
-Status
-                "
-                value={search}
-                onChange={(e) =>
-                    handleSearch(
-                        e.target.value
-                    )
-                }
-                className="
-                    w-full
-                    border
-                    rounded
-                    p-3
-                    mb-6
+            {
+                userType !== "member" && 
+                <>
+                <input
+                    type="text"
+                    placeholder="
+                        Search by Issue ID,
+                        Student ID,
+                        Student Name,
+                        Book ID,
+                        Book Title,
+                        Status
+                    "
+                    value={search}
+                    onChange={(e) =>
+                        handleSearch(
+                            e.target.value
+                        )
+                    }
+                    className="
+                        w-full
+                        border
+                        rounded
+                        p-3
+                        mb-6
 
-                    dark:bg-gray-800
-                    dark:border-gray-700
-                "
-            />
+                        dark:bg-gray-800
+                        dark:border-gray-700
+                    "
+                />
+                </>
+            }
 
             <div
                 className="
@@ -311,9 +326,13 @@ Status
                                 Status
                             </th>
 
-                            <th className="p-4">
-                                Actions
-                            </th>
+                            {
+                                userType !== "member" && (
+                                    <th className="p-4">
+                                        Actions
+                                    </th>
+                                )
+                            }
 
                         </tr>
 
@@ -388,25 +407,30 @@ Status
 
                                         </td>
 
-                                        <td className="p-4">
+                                        {
+                                            userType !== "member" && (
 
-                                            <ActionsDropdown
-                                                actions={[
-                                                    ...(issue.status === "ISSUED"
-                                                        ? [{
-                                                            label:
-                                                                "Return Book",
-                                                            onClick:
-                                                                () =>
-                                                                    onReturnBook?.(
-                                                                        issue
-                                                                    )
-                                                        }]
-                                                        : [])
-                                                ]}
-                                            />
+                                            <td className="p-4">
 
-                                        </td>
+                                                <ActionsDropdown
+                                                    actions={[
+                                                        ...(issue.status === "ISSUED"
+                                                            ? [{
+                                                                label:
+                                                                    "Return Book",
+                                                                onClick:
+                                                                    () =>
+                                                                        onReturnBook?.(
+                                                                            issue
+                                                                        )
+                                                                }]
+                                                            : [])
+                                                    ]}
+                                                />
+                                                
+
+                                            </td>)
+                                        }
 
                                     </tr>
                                 )

@@ -2,7 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-const verifyToken = require("../middleware/authMiddleware");
+const { verifyToken } = require("../middleware/authMiddleware");
 
 const {
     purchaseBook,
@@ -16,16 +16,16 @@ const {
 
 router.post("/", verifyToken, purchaseBook);
 
-router.get("/", getAllPurchased);
+router.get("/", verifyToken, getAllPurchased);
 
-router.get("/student", getPurchasedByStudent);
+router.get("/student",verifyToken, getPurchasedByStudent);
 
-router.get("/book", getPurchasedByBook);
+router.get("/book", verifyToken, getPurchasedByBook);
 
-router.get("/date", getPurchasesByDate);
+router.get("/date", verifyToken, getPurchasesByDate);
 
-router.get("/sales", getTotalSales);
+router.get("/sales", verifyToken, getTotalSales);
 
-router.get("/:id", getPurchasedById);
+router.get("/:id", verifyToken, getPurchasedById);
 
 module.exports = router;

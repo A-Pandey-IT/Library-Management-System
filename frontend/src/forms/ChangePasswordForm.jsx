@@ -2,7 +2,11 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import api from "../services/api";
 
-function ChangePasswordForm({ onBack }) {
+function ChangePasswordForm({ 
+    endpoint,
+    onSuccess,
+    buttonText = "Update Password"
+ }) {
     const [formData, setFormData] = useState({
         currentPassword: "",
         newPassword: "",
@@ -68,25 +72,29 @@ function ChangePasswordForm({ onBack }) {
         try {
             setLoading(true);
 
-            await api.put(
-                "/admin/change-password",
-                {
-                    currentPassword:
-                        formData.currentPassword,
-                    newPassword:
-                        formData.newPassword,
+            const requestBody =
+                endpoint === "/member/changeUserPassword"
+                ? {
+                    oldPassword: formData.currentPassword,
+                    newPassword: formData.newPassword,
+                    confirmPassword: formData.confirmPassword
                 }
+                : {
+                    currentPassword: formData.currentPassword,
+                    newPassword: formData.newPassword
+                };
+            console.log("Endpoint:", endpoint);
+            console.log("Request Body:", requestBody);
+
+            await api.put(
+                endpoint,
+                requestBody
             );
 
             alert(
-                "Password changed successfully. Please login again."
+                "Password changed successfully."
             );
-
-            localStorage.removeItem("token");
-
-            window.location.reload();
-
-            onBack?.();
+            onSuccess?.();
         } catch (error) {
             alert(
                 error.response?.data?.message ||
@@ -271,7 +279,8 @@ function ChangePasswordForm({ onBack }) {
             >
                 {loading
                     ? "Updating..."
-                    : "Update Password"}
+                    : buttonText
+                }
             </button>
         </form>
     );

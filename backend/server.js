@@ -25,6 +25,9 @@ const transactionRoutes = require
 const adminRoutes = require
 ("./routes/adminRoutes");
 
+const memberRoutes = require
+("./routes/memberRoutes");
+
 const dashboardRoutes =
 require("./routes/dashboardRoutes");
 
@@ -52,6 +55,8 @@ app.use("/transaction", transactionRoutes);
 app.use("/purchase", purchaseRoutes);
 
 app.use("/admin", adminRoutes);
+
+app.use("/member", memberRoutes);
 
 app.use("/dashboard", dashboardRoutes);
 

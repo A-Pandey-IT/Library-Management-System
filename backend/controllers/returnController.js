@@ -1,9 +1,11 @@
 const db = require("../config/db");
 
 const returnBook = async (req, res) => {
-    const connection = await db.getConnection();
+    let connection; 
 
     try {
+
+        connection = await db.getConnection();
 
         const { student_id, book_id } = req.body;
 
@@ -33,6 +35,8 @@ const returnBook = async (req, res) => {
         const [issueRows] = await connection.query(
             `
             SELECT *
+                id,
+                due_date
             FROM issued_books
             WHERE student_id = ?
             AND book_id = ?
@@ -102,7 +106,7 @@ const returnBook = async (req, res) => {
             transaction_type,
             transaction_date
             )
-            VALUES (?, ?, 'ISSUE', NOW())
+            VALUES (?, ?, 'RETURN', NOW())
         `,
             [studentId, bookId]
         );
@@ -129,7 +133,9 @@ const returnBook = async (req, res) => {
             error: error.message
         })
     } finally{
-        connection.release();
+        if(connection){
+           connection.release(); 
+        }
     }
 };
 

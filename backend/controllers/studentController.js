@@ -1,246 +1,667 @@
 const db = require("../config/db");
+const bcrypt = require("bcrypt");
+
+/* ------------------------------------------
+   Constants
+------------------------------------------ */
+
+const studentFields = `
+    id,
+    name,
+    email,
+    phone,
+    max_books_allowed,
+    created_at,
+    is_active
+`;
+
+const DEFAULT_PASSWORD_SUFFIX = "@1234";
+
+/* ------------------------------------------
+   Helper Functions
+------------------------------------------ */
+
+const isValidId = (id) => {
+
+    const number = Number(id);
+
+    return Number.isInteger(number) && number > 0;
+
+};
+
+const isValidEmail = (email) => {
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+};
+
+const isValidPhone = (phone) => {
+
+    return /^\d{10}$/.test(phone);
+
+};
+
+const generateDefaultPassword = (email) => {
+
+    const username =
+        email
+            .trim()
+            .split("@")[0];
+
+    return `${username}${DEFAULT_PASSWORD_SUFFIX}`;
+
+};
+
+/* ------------------------------------------
+   Get All Students
+------------------------------------------ */
 
 const getAllStudents = async (req, res) => {
 
-    try{
+    try {
 
-        const [rows] = await db.query
-            ("SELECT * FROM students ORDER BY id DESC");
+        const [students] =
+            await db.query(
+                `
+                SELECT
+                    ${studentFields}
+                FROM students
+                ORDER BY id DESC
+                `
+            );
 
-        res.status(200).json(rows);
+        return res.status(200).json({
+            success: true,
+            data: students
+        });
 
-    } catch (error){
+    } catch (error) {
 
-        res.status(500).json({
-            message: "Error fetching Students",
-            error: error.message
-        })
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Error fetching students."
+        });
 
     }
 
-}
+};
 
-
+/* ------------------------------------------
+   Search Students
+------------------------------------------ */
 
 const searchStudents = async (req, res) => {
 
-    try{
+    try {
 
-        const { name, id, email } = req.query;
+        const {
+            id,
+            name,
+            email,
+            phone
+        } = req.query;
 
-        if(!name && !id && !email){
+        if (
+            !id &&
+            !name &&
+            !email &&
+            !phone
+        ) {
+
             return res.status(400).json({
-                message: "At least one of id, name, or email is required"
+                success: false,
+                message:
+                    "Provide at least one search field."
             });
+
         }
 
-        let query = "SELECT * FROM students WHERE 1=1";
-        let params = [];
+        let query = `
+            SELECT
+                ${studentFields}
+            FROM students
+            WHERE 1 = 1
+        `;
 
-        if(name){
-            query += " AND name LIKE ?";
-            params.push(`%${name}%`);
+        const params = [];
+
+        if (id) {
+
+            if (!isValidId(id)) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Invalid student ID."
+                });
+
+            }
+
+            query += " AND id = ?";
+
+            params.push(Number(id));
+
         }
 
-        if(id){
-            query += " AND CAST(id AS CHAR) LIKE ?";
-            params.push(`%${id}%`);
+        if (name) {
+
+            query +=
+                " AND name LIKE ?";
+
+            params.push(
+                `%${name.trim()}%`
+            );
+
         }
 
-        if(email){
-            query += " AND email LIKE ?";
-            params.push(`%${email}%`);
+        if (email) {
+
+            if (!isValidEmail(email)) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Invalid email."
+                });
+
+            }
+
+            query +=
+                " AND email LIKE ?";
+
+            params.push(
+                `%${email.trim()}%`
+            );
+
         }
 
-        const [rows] = await db.query(query, params);
+        if (phone) {
 
-        if (rows.length === 0) {
+            if (!isValidPhone(phone)) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Phone number must contain exactly 10 digits."
+                });
+
+            }
+
+            query +=
+                " AND phone LIKE ?";
+
+            params.push(
+                `%${phone.trim()}%`
+            );
+
+        }
+
+        query +=
+            " ORDER BY id DESC";
+
+        const [students] =
+            await db.query(
+                query,
+                params
+            );
+
+        if (
+            students.length === 0
+        ) {
 
             return res.status(404).json({
-                message: "Student not found"
+                success: false,
+                message:
+                    "No students found."
             });
+
         }
 
-        res.status(200).json(rows);
+        return res.status(200).json({
+            success: true,
+            data: students
+        });
 
-    } catch(error){
-        res.status(500).json({
-            message: "Error searching Student",
-            error: error.message
-        })
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Error searching students."
+        });
+
     }
-}
 
+};
 
+/* ------------------------------------------
+   Get Student By ID
+------------------------------------------ */
 
 const getStudentById = async (req, res) => {
 
-    try{
+    try {
 
         const { id } = req.params;
 
-        if(isNaN(id)){
+        if (!isValidId(id)) {
+
             return res.status(400).json({
-                message: "Invalid students id"
+                success: false,
+                message:
+                    "Invalid student ID."
             });
+
         }
 
-        const [rows] = await db.query(
-            `
-            SELECT * FROM students WHERE id = ?
-            `, [id]
-        );
+        const [students] =
+            await db.query(
+                `
+                SELECT
+                    ${studentFields}
+                FROM students
+                WHERE id = ?
+                `,
+                [Number(id)]
+            );
 
-        if (rows.length === 0) {
+        if (students.length === 0) {
 
             return res.status(404).json({
-                message: "Student not found"
+                success: false,
+                message:
+                    "Student not found."
             });
+
         }
 
-        res.status(200).json(rows[0]);
-        
-    } catch(error){
-        res.status(500).json({
-            message: "Error fetching Student",
-            error: error.message
+        return res.status(200).json({
+            success: true,
+            data: students[0]
         });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Error fetching student."
+        });
+
     }
 
-}//http://localhost:5000/students/1
+};
 
-
+/* ------------------------------------------
+   Add Student
+------------------------------------------ */
 
 const addStudent = async (req, res) => {
 
-    try{
+    try {
 
-        const { name, email, phone} = 
-        req.body;
+        const {
+            name,
+            email,
+            phone
+        } = req.body;
 
-        if(!name || name.trim() === ""){
+        if (!name || !name.trim()) {
+
             return res.status(400).json({
-                message: "Name is required"
+                success: false,
+                message: "Name is required."
             });
+
         }
 
-        const emailRegex = 
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !isValidEmail(email)) {
 
-        if(!email || !emailRegex.test(email)){
             return res.status(400).json({
-                message: "Valid email is required"
+                success: false,
+                message: "Valid email is required."
             });
+
         }
 
-        if (phone) {
-            const phoneRegex = /^\d{10}$/;
+        if (
+            phone &&
+            !isValidPhone(phone)
+        ) {
 
-            if (!phoneRegex.test(phone)) {
-                return res.status(400).json({
-                    message: "Phone number must contain exactly 10 digits"
-                });
-            }
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Phone number must contain exactly 10 digits."
+            });
+
         }
 
-        const query = `
-            INSERT INTO students
-            (name, email, phone)
-            VALUES (?, ?, ?)
-        `;
+        const defaultPassword =
+            generateDefaultPassword(
+                email
+            );
 
-        const [result] = await db.query(
-            query, [name.trim(), email.trim(), phone || null]
-        );
+            const hashedPassword =
+                await bcrypt.hash(
+                    defaultPassword,
+                    10
+                );
 
-        res.status(201).json({
-            message: "Student added successfully",
-            studentId: result.insertId
+        const [result] =
+            await db.query(
+                `
+                INSERT INTO students
+                (
+                    name,
+                    email,
+                    phone,
+                    password,
+                    is_active,
+                    must_change_password
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    TRUE,
+                    TRUE
+                )
+                `,
+                [
+                    name.trim(),
+                    email.trim(),
+                    phone?.trim() || null,
+                    hashedPassword
+                ]
+            );
+
+        return res.status(201).json({
+
+            success: true,
+
+            message:
+                "Student added successfully.",
+
+            studentId:
+                result.insertId
+
         });
-        
-    } catch(error){
 
-        if(error.code === "ER_DUP_ENTRY"){
-            return res.status(400).json({
-                message: "Email already exists"
+    } catch (error) {
+
+        if (
+            error.code ===
+            "ER_DUP_ENTRY"
+        ) {
+
+            return res.status(409).json({
+
+                success: false,
+
+                message:
+                    "Email already exists."
+
             });
+
         }
 
-        res.status(500).json({
-            message: "Error adding Student",
-            error: error.message
-        })
+        console.error(error);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Error adding student."
+
+        });
+
     }
 
-}
+};
 
-
+/* ------------------------------------------
+   Update Student
+------------------------------------------ */
 
 const updateStudent = async (req, res) => {
 
-    try{
-        
-        const { id } = req.params;
-        const { name, email, phone } = req.body;
+    try {
 
-         if(!name || name.trim() === ""){
+        const { id } =
+            req.params;
+
+        if (!isValidId(id)) {
+
             return res.status(400).json({
-                message: "Name is required"
+
+                success: false,
+
+                message:
+                    "Invalid student ID."
+
             });
+
         }
 
-        const emailRegex = 
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const {
+            name,
+            email,
+            phone,
+            is_active,
+            resetPassword
+        } = req.body;
 
-        if(!email || !emailRegex.test(email)){
+        const [students] =
+            await db.query(
+                `
+                SELECT
+                    id,
+                    name,
+                    email,
+                    phone,
+                    is_active
+                FROM students
+                WHERE id = ?
+                `,
+                [Number(id)]
+            );
+
+        if (
+            students.length === 0
+        ) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "Student not found."
+
+            });
+
+        }
+
+        const student =
+            students[0];
+
+        const updatedName =
+            name
+                ? name.trim()
+                : student.name;
+
+        const updatedEmail =
+            email
+                ? email.trim()
+                : student.email;
+
+        const emailChanged = 
+        updatedEmail.trim().toLowerCase() !== 
+        student.email.trim().toLowerCase();
+
+        const updatedPhone =
+            phone !== undefined
+                ? (
+                    phone?.trim() ||
+                    null
+                )
+                : student.phone;
+
+        const updatedStatus =
+            typeof is_active ===
+            "boolean"
+
+                ? is_active
+
+                : student.is_active;
+
+        if (!updatedName) {
+
             return res.status(400).json({
-                message: "Valid email is required"
+
+                success: false,
+
+                message:
+                    "Name is required."
+
             });
+
         }
 
-        if (phone) {
-            const phoneRegex = /^\d{10}$/;
+        if (
+            !isValidEmail(
+                updatedEmail
+            )
+        ) {
 
-            if (!phoneRegex.test(phone)) {
-                return res.status(400).json({
-                    message: "Phone number must contain exactly 10 digits"
-                });
-            }
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Valid email is required."
+
+            });
+
         }
 
-        const query = `
+        if (
+            updatedPhone &&
+            !isValidPhone(
+                updatedPhone
+            )
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Phone number must contain exactly 10 digits."
+
+            });
+
+        }
+
+        let query = 
+            `
             UPDATE students
-            SET 
+            SET
                 name = ?,
                 email = ?,
-                phone = ?
-            WHERE id = ?
-        `;
+                phone = ?,
+                is_active = ?
+            `;
 
-        const [result] = await db.query(
-            query,
-            [name, email, phone || null, id]
-        );
+        const params =
+            [
+                updatedName,
+                updatedEmail,
+                updatedPhone,
+                updatedStatus
+            ]
+        ;
 
-        if(result.affectedRows === 0){
-            return res.status(404).json({
-                message: "Student not found"
-            });
+        if(emailChanged && 
+            resetPassword === true
+        ){
+            query += 
+            `
+                , password = ?,
+                must_change_password = TRUE
+            `;
+
+            const defaultPassword =
+                generateDefaultPassword(updatedEmail);
+
+            const hashedPassword =
+                await bcrypt.hash(defaultPassword, 10);
+
+            params.push(hashedPassword);
         }
 
-        res.status(200).json({
-            message: "Student updated successfully"
-        })
-        
-    }catch(error){
-        res.status(500).json({
-            message: "Error updating Student",
-            error: error.message
-        })
+        query += ` WHERE id = ?`;
+
+        params.push(Number(id));
+
+        await db.query(query, params);
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                emailChanged && resetPassword
+                ? "Student updated and password reset successfully."
+                : "Student updated successfully."
+
+        });
+
+    } catch (error) {
+
+        if (
+            error.code ===
+            "ER_DUP_ENTRY"
+        ) {
+
+            return res.status(409).json({
+
+                success: false,
+
+                message:
+                    "Email already exists."
+
+            });
+
+        }
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Error updating student."
+
+        });
+
     }
 
-}
+};
 
+/* ------------------------------------------
+   Delete Student
+------------------------------------------ */
 
 
 const deleteStudent = async (req, res) => {
@@ -249,64 +670,162 @@ const deleteStudent = async (req, res) => {
 
         const { id } = req.params;
 
-        const sId = Number(id);
-        if(!Number.isInteger(Number(sId)) || sId <= 0){
+        if (!isValidId(id)) {
+
             return res.status(400).json({
-                success: false,
-                message: "Valid student ID required"
+                message: "Invalid student ID."
             });
+
         }
 
         const [issuedBooks] = await db.query(
-        `
+            `
             SELECT COUNT(*) AS total
             FROM issued_books
-            WHERE student_id = ?
-            AND status = 'ISSUED'
+            WHERE
+                student_id = ?
+                AND status = 'ISSUED'
             `,
-            [sId]
+            [Number(id)]
         );
 
-        if(issuedBooks[0].total > 0){
+        if (issuedBooks[0].total > 0) {
+
             return res.status(400).json({
                 success: false,
                 message:
-                "Student has active issued books. Return all books first."
+                    "Student has active issued books. Return all books first."
             });
+
         }
 
         const [result] = await db.query(
             `
-            DELETE FROM students WHERE id = ?
-            `, [id]
+            DELETE FROM students
+            WHERE id = ?
+            `,
+            [Number(id)]
         );
 
-        if(result.affectedRows === 0){
+        if (result.affectedRows === 0) {
+
             return res.status(404).json({
-                success: false,
-                message: "Student not found"
+                message: "Student not found."
             });
+
         }
-        res.status(200).json({
+
+        return res.status(200).json({
             success: true,
-            message: `Student ${id} is deleted successfully`
+            message: "Student deleted successfully."
         });
-        
-    } catch(error){
+
+    } catch (error) {
+
+        console.error(error);
+
         res.status(500).json({
-            message: "Error deleting Student",
+            message: "Error deleting student.",
             error: error.message
         });
+
     }
 
-}
+};
+
+
+
+/* ------------------------------------------
+   Reset Student Password
+------------------------------------------ */
+
+const resetStudentPassword = async (req, res) => {
+
+    try {
+
+        const { id } = req.params;
+
+        if (!isValidId(id)) {
+
+            return res.status(400).json({
+                message: "Invalid student ID."
+            });
+
+        }
+
+        const [students] = await db.query(
+            `
+            SELECT
+                email
+            FROM students
+            WHERE id = ?
+            `,
+            [Number(id)]
+        );
+
+        if (students.length === 0) {
+
+            return res.status(404).json({
+                message: "Student not found."
+            });
+
+        }
+
+        const defaultPassword =
+            generateDefaultPassword(students[0].email);
+
+            const hashedPassword =
+            await bcrypt.hash(defaultPassword, 10);
+
+        await db.query(
+            `
+            UPDATE students
+            SET
+                password = ?,
+                must_change_password = TRUE
+            WHERE id = ?
+            `,
+            [
+                hashedPassword,
+                Number(id)
+            ]
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successfully.",
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error resetting password.",
+            error: error.message
+        });
+
+    }
+
+};
+
 
 
 module.exports = {
+
     getAllStudents,
+
     searchStudents,
+
     getStudentById,
+
     addStudent,
+
     updateStudent,
-    deleteStudent
-}
+  
+    deleteStudent,
+
+    resetStudentPassword
+
+};

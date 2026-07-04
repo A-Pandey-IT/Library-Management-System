@@ -2,7 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-const verifyToken = require("../middleware/authMiddleware");
+const { verifyToken } = require("../middleware/authMiddleware");
 
 const {
     returnBook,
@@ -11,6 +11,6 @@ const {
 
 router.post("/", verifyToken, returnBook);
 
-router.get("/", getReturnedBooks);
+router.get("/", verifyToken, getReturnedBooks);
 
 module.exports = router;

@@ -9,9 +9,19 @@ function App() {
     const [isLoggedIn,
         setIsLoggedIn] =
         useState(
-            !!localStorage.getItem(
-                "token"
-            )
+            !!localStorage.getItem("token")
+        );
+
+    const [userType,
+        setUserType] =
+        useState(
+            localStorage.getItem("userType") || "guest"
+        );
+
+    const [role,
+        setRole] =
+        useState(
+            localStorage.getItem("role") || null
         );
 
     useEffect(() => {
@@ -31,12 +41,15 @@ function App() {
 
     return (
         <>
-            <DashboardPage 
-                isLoggedIn={
-                    isLoggedIn
-                }
-
+            <DashboardPage
+                isLoggedIn={isLoggedIn}
                 setIsLoggedIn={setIsLoggedIn}
+
+                userType={userType}
+                setUserType={setUserType}
+
+                role={role}
+                setRole={setRole}
             />
         </>
     );

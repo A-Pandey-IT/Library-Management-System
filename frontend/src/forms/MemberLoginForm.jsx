@@ -6,17 +6,17 @@ import {
 
 import api from "../services/api";
 
-function LoginForm({
+function MemberLoginForm({
+
     setIsLoggedIn,
     onSuccess
+
 }) {
 
-    const [username,
-        setUsername] =
+    const [email, setEmail] =
         useState("");
 
-    const [password,
-        setPassword] =
+    const [password, setPassword] =
         useState("");
 
     const [showPassword,
@@ -38,56 +38,73 @@ function LoginForm({
 
                 const response =
                     await api.post(
-                        "/admin/login",
+                        "/member/login",
                         {
-                            username: username.trim(),
+                            email:
+                                email.trim(),
                             password
                         }
                     );
 
-                const staff =
-                    response.data.data;
-                    console.log(staff);
+                const {
+                    member,
+                    token,
+                    forcePasswordChange
+                } = response.data;
 
-                    localStorage.setItem(
-                        "token",
-                        staff.token
-                    );
+                localStorage.setItem(
+                    "token",
+                    token
+                );
 
-                    localStorage.setItem(
-                        "adminId",
-                        staff.adminId
-                    );
+                localStorage.setItem(
+                    "userType",
+                    "member"
+                );
 
-                    localStorage.setItem(
-                        "username",
-                        staff.username
-                    );
+                localStorage.setItem(
+                    "memberId",
+                    member.id
+                );
 
-                    localStorage.setItem(
-                        "role",
-                        staff.role
-                    );
+                localStorage.setItem(
+                    "memberName",
+                    member.name
+                );
 
-                    localStorage.setItem(
-                        "userType",
-                        "staff"
-                    );
+                localStorage.setItem(
+                    "memberEmail",
+                    member.email
+                );
 
-                    localStorage.setItem(
-                        "isLoggedIn",
-                        "true"
-                    );
+                localStorage.setItem(
+                    "isLoggedIn",
+                    "true"
+                );
+
+                localStorage.setItem(
+                    "forcePasswordChange",
+                    forcePasswordChange ? "true" : "false"
+                );
 
                 setIsLoggedIn(true);
+
+                if (forcePasswordChange) {
+                    alert(
+                        "You must change your password before continuing."
+                    );
+                }
 
                 onSuccess?.();
 
             } catch (error) {
 
                 alert(
+
                     error.response?.data?.message ||
+
                     "Unable to login."
+
                 );
 
             } finally {
@@ -95,6 +112,7 @@ function LoginForm({
                 setLoading(false);
 
             }
+
         };
 
     return (
@@ -109,11 +127,11 @@ function LoginForm({
         >
 
             <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) =>
-                    setUsername(
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e)=>
+                    setEmail(
                         e.target.value
                     )
                 }
@@ -139,7 +157,7 @@ function LoginForm({
                     }
                     placeholder="Password"
                     value={password}
-                    onChange={(e) =>
+                    onChange={(e)=>
                         setPassword(
                             e.target.value
                         )
@@ -158,7 +176,7 @@ function LoginForm({
 
                 <button
                     type="button"
-                    onClick={() =>
+                    onClick={()=>
                         setShowPassword(
                             !showPassword
                         )
@@ -171,11 +189,15 @@ function LoginForm({
                         text-gray-500
                     "
                 >
+
                     {
                         showPassword
-                            ? <FaEyeSlash />
-                            : <FaEye />
+                        ?
+                        <FaEyeSlash />
+                        :
+                        <FaEye />
                     }
+
                 </button>
 
             </div>
@@ -192,15 +214,21 @@ function LoginForm({
                     disabled:bg-gray-400
                 "
             >
+
                 {
                     loading
-                        ? "Signing In..."
-                        : "Staff Login"
+                    ?
+                    "Signing In..."
+                    :
+                    "Member Login"
                 }
+
             </button>
 
         </form>
+
     );
+
 }
 
-export default LoginForm;
+export default MemberLoginForm;

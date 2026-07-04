@@ -2,8 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-const verifyToken =
-require("../middleware/authMiddleware");
+const { verifyToken } = require("../middleware/authMiddleware");
 
 const {
     getAllTransactions,
@@ -13,7 +12,7 @@ const {
     getTransactionById
 } = require("../controllers/transactionController");
 
-router.get("/", getAllTransactions);
+router.get("/", verifyToken, getAllTransactions);
 
 router.get("/student", verifyToken, getTransactionsByStudent);
 

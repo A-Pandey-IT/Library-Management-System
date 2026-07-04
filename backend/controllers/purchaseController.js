@@ -3,9 +3,11 @@ const db = require("../config/db");
 
 
 const purchaseBook = async (req, res) => {
-    const connection = await db.getConnection();
+    let connection;
 
     try {
+
+        connection = await db.getConnection();
         const { student_id, book_id, quantity = 1 } = req.body;
 
         const studentId = Number(student_id);
@@ -197,9 +199,9 @@ const getAllPurchased = async (req, res) => {
                 p.total_price,
                 p.purchased_date
             FROM purchases p
-            LEFT JOIN students s
+            INNER JOIN students s
                 ON p.student_id = s.id
-            LEFT JOIN books b
+            INNER JOIN books b
                 ON p.book_id = b.id
             ORDER BY p.purchased_date DESC
             LIMIT ?
@@ -509,7 +511,7 @@ const getPurchasesByDate = async (req, res) => {
             values.push(date);
         }
 
-        if (startDate && endDate) {
+        else if (startDate && endDate) {
             query += `
                 AND DATE(purchased_date)
                 BETWEEN ? AND ?

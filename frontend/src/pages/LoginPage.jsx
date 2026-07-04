@@ -14,13 +14,24 @@ function LoginPage({
                     text-3xl
                     font-bold
                     text-center
-                    mb-6
+                    mb-2
                     text-gray-800
                     dark:text-white
                 "
             >
                 Library Management
             </h1>
+
+            <p
+                className="
+                    text-center
+                    text-gray-600
+                    dark:text-gray-300
+                    mb-6
+                "
+            >
+                Staff Login
+            </p>
 
             <LoginForm
                 setIsLoggedIn={

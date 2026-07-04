@@ -217,7 +217,7 @@ const getIssuedBooks = async (req, res) => {
                 ON ib.student_id = s.id
             JOIN books b
             ON ib.book_id = b.id
-            ORDER BY ib.id DESC
+            ORDER BY ib.issue_date DESC
             `
         );
 

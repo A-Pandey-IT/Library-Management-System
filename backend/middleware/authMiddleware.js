@@ -43,4 +43,31 @@ const verifyToken = (
     }
 };
 
-module.exports = verifyToken;
+const requireLibrarian =
+(
+req,
+res,
+next
+)=>{
+
+if(
+req.admin.role !==
+"LIBRARIAN"
+){
+
+return res.status(403).json({
+
+success:false,
+
+message:
+"Only librarians can access this resource."
+
+});
+
+}
+
+next();
+
+};
+
+module.exports = { verifyToken, requireLibrarian };

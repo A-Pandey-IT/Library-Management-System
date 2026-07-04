@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
 
+import AdminManagementPage from "./AdminManagementPage";
+import AddAdminForm from "../forms/AddAdminForm";
+
+import ChangePasswordPage from "./ChangePasswordPage";
+
+import MemberDashboard from "./MemberDashboard";
+
+import MemberLoginPage from "./MemberLoginPage";
+
 import LoginPage from "./LoginPage";
 
 import HomeDashboard from "./HomeDashboard";
@@ -45,9 +54,40 @@ import EditStudentForm from "../forms/EditStudentForm";
 import StudentHistory from "../forms/StudentHistory";
 
 function DashboardPage({
+
     isLoggedIn,
-    setIsLoggedIn
+    setIsLoggedIn,
+
+    userType,
+    setUserType,
+
+    role,
+    setRole
+
 }) {
+
+    const forcePasswordChange =
+        localStorage.getItem(
+            "forcePasswordChange"
+        ) === "true";
+
+    if (
+        userType === "member" &&
+        forcePasswordChange
+    ) {
+        return (
+            <ChangePasswordPage />
+        );
+    }
+
+    const [
+        showAddAdminModal,
+        setShowAddAdminModal
+    ] = useState(false);
+
+    const [showMemberLogin,
+    setShowMemberLogin] =
+    useState(false);
 
     const [
     showPurchaseModal,
@@ -98,11 +138,16 @@ function DashboardPage({
 
     const logout = () => {
 
-    localStorage.removeItem("token");
+        localStorage.clear();
+        
 
-    setSidebarOpen(false);
+        setRole(null);
+        setUserType("guest");
+        setSidebarOpen(false);
+        setIsLoggedIn(false);
 
-    setIsLoggedIn(false);
+        setRefreshData(prev => !prev);
+        window.location.reload();
     };
 
     const [showEditModal,
@@ -250,6 +295,32 @@ function DashboardPage({
         }
     };
 
+    const handleDeleteAdmin = async (admin) => {
+
+        const confirmDelete =
+            window.confirm(
+                `Delete ${admin.username}?`
+            );
+
+    if (!confirmDelete) return;
+        try {
+            await api.delete(
+                `/admin/${admin.id}`
+            );
+            alert(
+                "Admin deleted."
+            );
+            setRefreshData(
+                prev => !prev
+            );
+        } catch (error) {
+            alert(
+                error.response?.data?.message ||
+                "Delete failed."
+            );
+        }
+    };
+
     return (
         <>
         <div
@@ -266,6 +337,10 @@ function DashboardPage({
 
                 isLoggedIn={isLoggedIn}
 
+                userType={userType}
+
+                role={role}
+
                 setActivePage={setActivePage}
 
                 closeSidebar={() =>
@@ -276,6 +351,10 @@ function DashboardPage({
 
                 onLogin={() =>
                     setShowLogin(true)
+                }
+
+                onMemberLogin={()=>
+                    setShowMemberLogin(true)
                 }
             />
 
@@ -288,13 +367,19 @@ function DashboardPage({
                 activePage={activePage}
 
                 onAddMember={() =>{
+                    if (userType !== "staff"){
+                        return;
+                    }
+
                     if(activePage === "users"){
                         setShowModal(true);
                     }
 
                     else if (activePage === "books"){
                         setShowAddBookModal(true);
-                    } else if(activePage === "purchase"){
+                    } 
+
+                    else if(activePage === "purchase"){
                         setShowPurchaseModal(true);
                     }
                 }}
@@ -308,6 +393,7 @@ function DashboardPage({
 
                 {
                     isLoggedIn &&
+                    userType === "staff" &&
                     activePage === "users" &&
 
                     <UsersPage
@@ -333,6 +419,7 @@ function DashboardPage({
 
                 {
                     isLoggedIn &&
+                    userType === "staff"  &&
                     activePage === "books" &&
                     < BooksPage 
                         refreshData={refreshData}
@@ -352,6 +439,7 @@ function DashboardPage({
                 {
                     activePage === "issues" &&
                     <IssuesPage
+                        userType={userType}
                         refreshData={refreshData}
                         onReturnBook={(issue)=>{
                             setSelectedIssue(issue);
@@ -362,6 +450,7 @@ function DashboardPage({
 
                 {
                     isLoggedIn &&
+                    userType === "staff"  &&
                     activePage === "purchase" &&
                     <PurchasePage 
                         refreshData={refreshData}
@@ -375,7 +464,7 @@ function DashboardPage({
                 {
                     activePage === "transactions" &&
                     <TransactionsPage 
-                    
+                        userType={userType}
                     />
                 }
 
@@ -384,7 +473,9 @@ function DashboardPage({
 
                         isLoggedIn
                             ? (
-                                <HomeDashboard />
+                                userType === "member"
+                                    ? <MemberDashboard />
+                                    : <HomeDashboard />
                                 )
                             : (
                                 <div
@@ -425,19 +516,30 @@ function DashboardPage({
                                             mt-4
                                         "
                                     >
-                                        Login as an
-                                        administrator to
-                                        manage students,
-                                        books, purchases,
-                                        and other
-                                        administrative
-                                        features.
+                                        Login with your Staff or 
+                                        Member account to access 
+                                        library services.
                                     </p>
 
                                 </div>
                             )
 
                         )
+                }
+
+                {
+
+                    userType === "staff" &&
+                    role === "LIBRARIAN" &&
+                    activePage === "admins" &&
+
+                    <AdminManagementPage
+                        refreshData={refreshData}
+                        onAddAdmin={() =>
+                            setShowAddAdminModal(true)
+                        }
+                        onDeleteAdmin={handleDeleteAdmin}
+                    />
                 }
 
             </main>
@@ -557,10 +659,15 @@ function DashboardPage({
             >
 
                 <ChangePasswordForm
-                    onBack={() =>{
-                        setShowChangePassword(false);
-                        setActivePage("users");
-                    }                    }
+                    endpoint="/admin/change-password"
+                    buttonText="Update Password"
+                    onSuccess={() => {
+
+                        localStorage.clear();
+
+                        window.location.reload();
+
+                    }}
                 />
 
             </Modal>
@@ -695,17 +802,22 @@ function DashboardPage({
                 isOpen={
                     showLogin
                 }
-                title="Admin Login"
+                title="Staff Login"
                 onClose={() =>
                     setShowLogin(false)
                 }
             >
 
                 <LoginPage
-                    setIsLoggedIn={
-                        (value) => {
+                    setIsLoggedIn={(value) => {
 
                             setIsLoggedIn(value);
+
+                            setUserType(
+                                localStorage.getItem("userType")
+                            );
+
+                            setRole(localStorage.getItem("role"));
 
                             setShowLogin(false);
 
@@ -713,6 +825,58 @@ function DashboardPage({
                     }
                 />
 
+            </Modal>
+
+            <Modal
+                isOpen={showMemberLogin}
+                title="Member Login"
+                onClose={() =>
+                    setShowMemberLogin(false)
+                }
+            >
+
+                <MemberLoginPage
+                    setIsLoggedIn={(value) => {
+
+                        setIsLoggedIn(value);
+
+                        setUserType(
+                            localStorage.getItem("userType")
+                        );
+
+                        setRole(
+                            localStorage.getItem("role")
+                        );
+
+                    }}
+
+                    onSuccess={()=> {
+                        setShowMemberLogin(false)
+                    }}
+                />
+
+            </Modal>
+
+            <Modal
+
+                isOpen={showAddAdminModal}
+                title="Add Admin"
+                onClose={() =>
+
+                    setShowAddAdminModal(false)
+                }
+            >
+
+                <AddAdminForm
+                    onClose={() =>
+                        setShowAddAdminModal(false)
+                    }
+                    onSuccess={() =>
+                        setRefreshData(
+                            prev => !prev
+                        )
+                    }
+                />
             </Modal>
 
         </div>
