@@ -653,7 +653,11 @@ function DashboardPage({
                 title="Change Password"
                 onClose={() =>{
                     setShowChangePassword(false);
-                    setActivePage("users")
+                    if(userType === "member"){
+                        setActivePage("dashboard");
+                    } else{
+                        setActivePage("users");
+                    }
                 }
                     
                 }
@@ -662,8 +666,8 @@ function DashboardPage({
                 <ChangePasswordForm
                     endpoint={
                         userType === "member"
-                            ?"/member/changeUserPassword"
-                            :"/admin/change-password"
+                            ? "/member/changeUserPassword"
+                            : "/admin/change-password"
                     }
                     buttonText="Update Password"
                     onSuccess={() => {
