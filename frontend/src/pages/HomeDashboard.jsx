@@ -284,11 +284,13 @@ function HomeDashboard() {
                             "
                         >
                             {
-                                recent.map(
+                                recentTransactions.map(
                                     (transaction) => (
 
                                         <div
-                                            key={transaction.id}
+                                            key={
+                                                transaction.id
+                                            }
                                             className="
                                                 border-b
                                                 pb-2

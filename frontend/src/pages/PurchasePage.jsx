@@ -24,13 +24,7 @@ function PurchasePage({
         useState("");
 
     useEffect(() => {
-        console.log(
-        "Purchase refresh:",
-        refreshData
-    );
-
         fetchPurchases();
-
     }, [refreshData]);
 
     const fetchPurchases =

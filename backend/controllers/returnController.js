@@ -35,12 +35,12 @@ const returnBook = async (req, res) => {
         const [issueRows] = await connection.query(
             `
             SELECT *
-FROM issued_books
-WHERE student_id = ?
-AND book_id = ?
-AND status = 'ISSUED'
-ORDER BY id DESC
-LIMIT 1
+            FROM issued_books
+            WHERE student_id = ?
+            AND book_id = ?
+            AND status = 'ISSUED'
+            ORDER BY id DESC
+            LIMIT 1
             `, [studentId, bookId]
         );
 
@@ -111,31 +111,29 @@ LIMIT 1
 
         await connection.commit();
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Book returned successfully",
             fine,
-            overdueDays: 
-                fine > 0
-                ? fine / 5 : 0
+            overdueDays
         });
 
-    } catch(error){
-        try {
-            await connection.rollback();
-        } catch{}
+    } 
+    catch (error) {
+
+        if (connection) {
+            try {
+                await connection.rollback();
+            } catch {}
+        }
 
         return res.status(500).json({
             success: false,
             message: "Failed to return book",
             error: error.message
-        })
-    } finally{
-        if(connection){
-           connection.release(); 
-        }
+        });
     }
-};
+}
 
 const getReturnedBooks = async (req, res) => {
     try {

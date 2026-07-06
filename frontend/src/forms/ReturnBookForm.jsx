@@ -44,11 +44,11 @@ function ReturnBookForm({
                         `\nOverdue Days: ${response.data.overdueDays}`;
                 }
 
-                alert(message);
-
                 onSuccess?.();
 
                 onClose?.();
+
+                alert(message);
 
             } catch (error) {
 

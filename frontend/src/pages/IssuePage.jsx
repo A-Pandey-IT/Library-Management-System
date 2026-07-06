@@ -36,10 +36,11 @@ function IssuesPage({
 
         fetchIssues();
 
-    }, []);
+    }, [refreshData]);
 
     const fetchIssues =
         async () => {
+            setLoading(true);
 
             try {
 
