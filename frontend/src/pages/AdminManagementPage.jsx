@@ -63,6 +63,7 @@ function AdminManagementPage({
                 dark:bg-gray-800
                 rounded-lg
                 shadow
+                mt-15
                 p-6
             "
         >
