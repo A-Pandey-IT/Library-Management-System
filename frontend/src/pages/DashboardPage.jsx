@@ -437,6 +437,7 @@ function DashboardPage({
                 }
 
                 {
+                    isLoggedIn &&            
                     activePage === "issues" &&
                     <IssuesPage
                         userType={userType}

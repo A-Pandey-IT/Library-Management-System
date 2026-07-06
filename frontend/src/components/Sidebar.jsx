@@ -241,35 +241,37 @@ function Sidebar({
                     </li>)
                 }
 
-                <li
-                    onClick={() =>{
-                        setActivePage(
-                            "issues"
-                        );
-                        closeSidebar();
-                    }}
-                    className="
-                        cursor-pointer
-                        px-3
-                        py-2
-                        rounded-lg
-                        hover:shadow-[0px_0px_10px_rgba(255,255,255,0.5)]
-                        transition-all
-                        duration-200
-                    "
-                >
-                    <FaExchangeAlt
-                        className="
-                            inline
-                            mr-2
-                        "
-                    />
-                    {
-                        userType === "member"
-                        ? "My Issues"
-                        : "Issues"
-                    }
-                </li>
+                {
+    isLoggedIn && (
+        <li
+            onClick={() => {
+                setActivePage("issues");
+                closeSidebar();
+            }}
+            className="
+                cursor-pointer
+                px-3
+                py-2
+                rounded-lg
+                hover:shadow-[0px_0px_10px_rgba(255,255,255,0.5)]
+                transition-all
+                duration-200
+            "
+        >
+            <FaExchangeAlt
+                className="
+                    inline
+                    mr-2
+                "
+            />
+            {
+                userType === "member"
+                    ? "My Issues"
+                    : "Issues"
+            }
+        </li>
+    )
+}
 
                 <li
                     onClick={() =>{
@@ -456,7 +458,15 @@ function Sidebar({
                                 setActivePage("admins");
                                 closeSidebar();
                             }}
-                            className="..."
+                            className="
+                                    cursor-pointer
+                                    px-3
+                                    py-2
+                                    rounded-lg
+                                    hover:shadow-[0px_0px_10px_rgba(255,255,255,0.5)]
+                                    transition-all
+                                    duration-200
+                                "
                         >
                             Admin Management
                         </li>
