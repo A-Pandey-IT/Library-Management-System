@@ -35,14 +35,12 @@ const returnBook = async (req, res) => {
         const [issueRows] = await connection.query(
             `
             SELECT *
-                id,
-                due_date
-            FROM issued_books
-            WHERE student_id = ?
-            AND book_id = ?
-            AND status = 'ISSUED'
-            ORDER BY id DESC 
-            LIMIT 1
+FROM issued_books
+WHERE student_id = ?
+AND book_id = ?
+AND status = 'ISSUED'
+ORDER BY id DESC
+LIMIT 1
             `, [studentId, bookId]
         );
 
