@@ -3,7 +3,7 @@ import axios from "axios";
 const api = axios.create({
 
     baseURL:
-        "http://localhost:5000"
+        "https://library-management-system-backend-0o4u.onrender.com"
 
 });
 
