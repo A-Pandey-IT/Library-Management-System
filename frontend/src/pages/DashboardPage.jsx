@@ -660,7 +660,11 @@ function DashboardPage({
             >
 
                 <ChangePasswordForm
-                    endpoint="/admin/change-password"
+                    endpoint={
+                        userType === "member"
+                            ?"/member/changeUserPassword"
+                            :"/admin/change-password"
+                    }
                     buttonText="Update Password"
                     onSuccess={() => {
 
