@@ -273,35 +273,36 @@ function Sidebar({
     )
 }
 
-                <li
-                    onClick={() =>{
-                        setActivePage(
-                            "transactions"
-                        );
-                        closeSidebar();
-                    }}
-                    className="
-                        cursor-pointer
-                        px-3
-                        py-2
-                        rounded-lg
-                        hover:shadow-[0px_0px_10px_rgba(255,255,255,0.5)]
-                        transition-all
-                        duration-200
-                    "
-                >
-                    <FaReceipt
+                {isLoggedIn && (
+                    <li
+                        onClick={() => {
+                            setActivePage("transactions");
+                            closeSidebar();
+                        }}
                         className="
-                            inline
-                            mr-2
+                            cursor-pointer
+                            px-3
+                            py-2
+                            rounded-lg
+                            hover:shadow-[0px_0px_10px_rgba(255,255,255,0.5)]
+                            transition-all
+                            duration-200
                         "
-                    />
-                    {
-                        userType === "member"
-                        ? "My Transactions"
-                        : "Transactions"
-                    }
-                </li>
+                    >
+                        <FaReceipt
+                            className="
+                                inline
+                                mr-2
+                            "
+                        />
+
+                        {
+                            userType === "member"
+                                ? "My Transactions"
+                                : "Transactions"
+                        }
+                    </li>
+                )}
 
                 {
                     isLoggedIn &&
