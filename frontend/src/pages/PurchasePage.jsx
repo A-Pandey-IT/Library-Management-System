@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import ActionsDropdown from "../components/ActionsDropdown";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function PurchasePage({
     refreshData,
@@ -126,6 +127,12 @@ function PurchasePage({
             <h2>
                 Loading Purchases...
             </h2>
+        );
+    }
+
+    if (loading) {
+        return (
+            <LoadingSpinner />
         );
     }
 

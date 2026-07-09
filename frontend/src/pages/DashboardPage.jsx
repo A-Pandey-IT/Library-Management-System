@@ -53,6 +53,8 @@ import EditStudentForm from "../forms/EditStudentForm";
 
 import StudentHistory from "../forms/StudentHistory";
 
+import LoadingSpinner from "../components/LoadingSpinner";
+
 function DashboardPage({
 
     isLoggedIn,
@@ -320,6 +322,12 @@ function DashboardPage({
             );
         }
     };
+
+    if (loading) {
+        return (
+            <LoadingSpinner />
+        );
+    }
 
     return (
         <>

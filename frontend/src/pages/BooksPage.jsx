@@ -5,6 +5,8 @@ import api from "../services/api";
 import ActionsDropdown from
 "../components/ActionsDropdown";
 
+import LoadingSpinner from "../components/LoadingSpinner";
+
 function BooksPage({
     onEditBook,
     onDeleteBook,
@@ -144,6 +146,12 @@ function BooksPage({
             <h2>
                 Loading Books...
             </h2>
+        );
+    }
+
+    if (loading) {
+        return (
+            <LoadingSpinner />
         );
     }
 
