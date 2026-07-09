@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
+import LoadingSpinner from "../components/LoadingSpinner";
+
 function AdminManagementPage({
 
     refreshData,
@@ -50,9 +52,9 @@ function AdminManagementPage({
     };
 
     if (loading) {
-
-        return <p>Loading...</p>;
-
+        return (
+            <LoadingSpinner />
+        );
     }
 
     return (

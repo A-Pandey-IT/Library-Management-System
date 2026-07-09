@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function TransactionPage({
     userType
@@ -201,14 +202,11 @@ const totalPurchases =
             "PURCHASE"
     ).length;
 
-if(loading){
-
-    return (
-        <h2>
-            Loading...
-        </h2>
-    );
-}
+    if (loading) {
+        return (
+            <LoadingSpinner />
+        );
+    }
 
 return (
 

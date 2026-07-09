@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import ActionsDropdown from "../components/ActionsDropdown";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function IssuesPage({
     userType,
@@ -181,11 +182,8 @@ function IssuesPage({
         };
 
     if (loading) {
-
         return (
-            <h2>
-                Loading...
-            </h2>
+            <LoadingSpinner />
         );
     }
 

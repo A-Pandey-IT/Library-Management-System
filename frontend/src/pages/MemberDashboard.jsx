@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import api from "../services/api";
 
+import LoadingSpinner from "../components/LoadingSpinner";
+
 function MemberDashboard() {
 
     const [member, setMember] =
@@ -56,22 +58,9 @@ function MemberDashboard() {
     };
 
     if (loading) {
-
         return (
-
-            <div
-                className="
-                    text-center
-                    text-lg
-                    mt-10
-                "
-            >
-                Loading...
-
-            </div>
-
+            <LoadingSpinner />
         );
-
     }
 
     const issuedBooks = issues.filter(

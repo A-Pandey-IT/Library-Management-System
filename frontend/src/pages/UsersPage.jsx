@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import ActionsDropdown from "../components/ActionsDropdown";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function UsersPage({
     refreshData,
@@ -97,11 +98,8 @@ function UsersPage({
         };
 
     if (loading) {
-
         return (
-            <h2>
-                Loading...
-            </h2>
+            <LoadingSpinner />
         );
     }
 

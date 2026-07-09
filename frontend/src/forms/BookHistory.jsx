@@ -3,6 +3,9 @@ import {
     useEffect
 } from "react";
 
+import LoadingSpinner
+from "../components/LoadingSpinner";
+
 import api from "../services/api";
 
 function BookHistory({
@@ -49,11 +52,9 @@ function BookHistory({
         }
     };
 
-    if(loading){
+    if (loading) {
         return (
-            <p>
-                Loading...
-            </p>
+            <LoadingSpinner />
         );
     }
 
