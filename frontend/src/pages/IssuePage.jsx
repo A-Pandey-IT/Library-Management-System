@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import ActionsDropdown from "../components/ActionsDropdown";
 import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 function IssuesPage({
     userType,
@@ -41,9 +42,8 @@ function IssuesPage({
 
     const fetchIssues =
         async () => {
-            setLoading(true);
-
             try {
+                setLoading(true);
 
                 const response =
                     await api.get(
@@ -66,7 +66,7 @@ function IssuesPage({
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Failed to load issues"
                 );
 
@@ -183,7 +183,9 @@ function IssuesPage({
 
     if (loading) {
         return (
-            <LoadingSpinner />
+            <LoadingSpinner 
+                text="Loading issued books..."
+            />
         );
     }
 

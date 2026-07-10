@@ -1,5 +1,7 @@
 import { useState } from "react";
 import api from "../services/api";
+import { FaSpinner } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 function ReturnBookForm({
     issue,
@@ -7,16 +9,15 @@ function ReturnBookForm({
     onClose
 }) {
 
-    const [loading,
-        setLoading] =
-        useState(false);
+    const [returning, setReturning] =
+    useState(false);
 
     const handleReturn =
         async () => {
 
             try {
 
-                setLoading(true);
+                setReturning(true);
 
                 const response =
                     await api.post(
@@ -48,20 +49,20 @@ function ReturnBookForm({
 
                 onClose?.();
 
-                alert(message);
+                toast.success(message);
 
             } catch (error) {
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     error.response?.data?.message ||
                     "Failed to return book"
                 );
 
             } finally {
 
-                setLoading(false);
+                setReturning(false);
             }
         };
 
@@ -140,29 +141,44 @@ function ReturnBookForm({
             </div>
 
             <button
-                onClick={
-                    handleReturn
-                }
-                disabled={
-                    loading
-                }
-                className="
-                    bg-red-600
-                    text-white
+                type="button"
+                onClick={handleReturn}
+                disabled={returning}
+                className={`
+                    w-full
                     py-3
                     rounded
+                    text-white          
+                    flex
+                    justify-center
+                    items-center
+                    gap-2
 
-                    hover:bg-red-700
-
-                    disabled:bg-gray-400
-                "
+                    ${
+                        returning
+                            ? "bg-orange-400 cursor-not-allowed"
+                            : "bg-orange-600 hover:bg-orange-700"
+                    }
+                `}
             >
+
                 {
-                    loading
-                        ? "Returning..."
-                        : "Return Book"
+                    returning
+                        ? (
+                            <>
+                                <FaSpinner
+                                    className="animate-spin"
+                                />
+
+                                Returning Book...
+                            </>
+                        )
+                        : (
+                            "Return Book"
+                        )
                 }
-            </button>
+
+        </button>
 
         </div>
     );

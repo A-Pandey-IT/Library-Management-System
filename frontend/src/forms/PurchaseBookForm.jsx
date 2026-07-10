@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { FaSpinner } from "react-icons/fa";
+
+import LoadingSpinner from "../components/LoadingSpinner";
+
+import toast from "react-hot-toast";
 
 function PurchaseBookForm({
     onSuccess,
@@ -36,6 +41,9 @@ function PurchaseBookForm({
         setLoading] =
         useState(false);
 
+    const [purchasing, setPurchasing] =
+    useState(false);
+
     useEffect(() => {
 
         fetchStudents();
@@ -47,6 +55,7 @@ function PurchaseBookForm({
         async () => {
 
             try {
+                setLoading(true);
 
                 const response =
                     await api.get(
@@ -66,9 +75,11 @@ function PurchaseBookForm({
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Failed to load students"
                 );
+            } finally{
+                setLoading(false);
             }
         };
 
@@ -95,7 +106,7 @@ function PurchaseBookForm({
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Failed to load books"
                 );
             }
@@ -111,7 +122,7 @@ function PurchaseBookForm({
                 !selectedBook
             ) {
 
-                alert(
+                toast.error(
                     "Please select student and book"
                 );
 
@@ -120,7 +131,7 @@ function PurchaseBookForm({
 
             try {
 
-                setLoading(true);
+                setPurchasing(true);
 
                 const response =
                     await api.post(
@@ -136,7 +147,7 @@ function PurchaseBookForm({
                         }
                     );
 
-                alert(
+                toast.success(
                     response.data.message
                 );
 
@@ -146,14 +157,14 @@ function PurchaseBookForm({
 
             } catch (error) {
 
-                alert(
+                toast.error(
                     error.response?.data?.message ||
                     "Purchase failed"
                 );
 
             } finally {
 
-                setLoading(false);
+                setPurchasing(false);
             }
         };
 
@@ -176,6 +187,14 @@ function PurchaseBookForm({
                         bookSearch.toLowerCase()
                     )
         );
+
+    if (loading) {
+        return (
+            <LoadingSpinner
+                text="Loading purchases..."
+            />
+        );
+    }
 
     return (
 
@@ -379,20 +398,41 @@ function PurchaseBookForm({
 
             <button
                 type="submit"
-                disabled={loading}
-                className="
-                    bg-green-600
-                    text-white
+                disabled={purchasing}
+                className={`
+                    w-full
                     py-3
                     rounded
-                    hover:bg-green-700
-                "
+                    text-white
+                    flex
+                    justify-center
+                    items-center
+                    gap-2
+
+                    ${
+                        purchasing
+                            ? "bg-purple-400 cursor-not-allowed"
+                            : "bg-purple-600 hover:bg-purple-700"
+                    }
+                `}
             >
+
                 {
-                    loading
-                        ? "Processing..."
-                        : "Purchase Book"
+                    purchasing
+                        ? (
+                            <>
+                                <FaSpinner
+                                    className="animate-spin"
+                                />
+
+                                Purchasing Book...
+                            </>
+                        )
+                        : (
+                            "Purchase Book"
+                        )
                 }
+
             </button>
 
         </form>

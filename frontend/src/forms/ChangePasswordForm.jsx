@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import api from "../services/api";
+import toast, { useToasterStore } from "react-hot-toast";
 
 function ChangePasswordForm({ 
     endpoint,
@@ -58,14 +59,14 @@ function ChangePasswordForm({
         e.preventDefault();
 
         if (!isPasswordValid) {
-            alert(
+            toast.error(
                 "Password does not meet all security requirements."
             );
             return;
         }
 
         if (!passwordsMatch) {
-            alert("Passwords do not match.");
+            toast.error("Passwords do not match.");
             return;
         }
 
@@ -91,12 +92,12 @@ function ChangePasswordForm({
                 requestBody
             );
 
-            alert(
+            toast.success(
                 "Password changed successfully."
             );
             onSuccess?.();
         } catch (error) {
-            alert(
+            toast.error(
                 error.response?.data?.message ||
                     "Failed to update password."
             );

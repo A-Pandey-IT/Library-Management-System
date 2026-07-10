@@ -5,6 +5,8 @@ import {
 
 import api from "../services/api";
 
+import toast from "react-hot-toast";
+
 function EditBookForm({
     book,
     onSuccess,
@@ -70,7 +72,7 @@ function EditBookForm({
                 formData
             );
 
-            alert(
+            toast.success(
                 response.data.message
             );
 
@@ -79,7 +81,7 @@ function EditBookForm({
 
         } catch(error){
 
-            alert(
+            toast.error(
                 error.response?.data?.message
             );
 

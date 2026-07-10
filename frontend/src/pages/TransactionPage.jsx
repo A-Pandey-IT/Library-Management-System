@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 function TransactionPage({
     userType
@@ -48,7 +49,7 @@ const fetchTransactions =
 
             console.error(error);
 
-            alert(
+            toast.error(
                 "Failed to load transactions"
             );
 
@@ -107,7 +108,7 @@ const searchByStudent =
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Failed to search student transactions"
                 );
             }
@@ -167,7 +168,7 @@ const searchByBook =
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Failed to search book transactions"
                 );
             }
@@ -204,7 +205,9 @@ const totalPurchases =
 
     if (loading) {
         return (
-            <LoadingSpinner />
+            <LoadingSpinner 
+                text="Loading transactions..."
+            />
         );
     }
 

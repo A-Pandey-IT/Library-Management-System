@@ -4,6 +4,8 @@ import LoginPage from "./pages/LoginPage";
 
 import DashboardPage from "./pages/DashboardPage";
 
+import { Toaster } from "react-hot-toast";
+
 function App() {
 
     const [isLoggedIn,
@@ -50,6 +52,19 @@ function App() {
 
                 role={role}
                 setRole={setRole}
+            />
+
+            <Toaster
+                position="top-right"
+                reverseOrder={false}
+                toastOptions={{
+                    duration: 3000,
+                    style: {
+                        borderRadius: "10px",
+                        background: "#333",
+                        color: "#fff",
+                    },
+                }}
             />
         </>
     );

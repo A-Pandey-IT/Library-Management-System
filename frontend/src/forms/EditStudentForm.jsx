@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
+import toast from "react-hot-toast";
 
 function EditStudentForm({
     student,
@@ -40,7 +41,7 @@ function EditStudentForm({
                     !formData.name.trim()
                 ) {
 
-                    alert(
+                    toast.error(
                         "Name is required"
                     );
 
@@ -51,7 +52,7 @@ function EditStudentForm({
                     !formData.email.trim()
                 ) {
 
-                    alert(
+                    toast.error(
                         "Email is required"
                     );
 
@@ -66,7 +67,7 @@ function EditStudentForm({
                         formData
                     );
 
-                alert(
+                toast.success(
                     response.data.message ||
                     "Student updated successfully"
                 );
@@ -81,7 +82,7 @@ function EditStudentForm({
                     error
                 );
 
-                alert(
+                toast.error(
                     error.response?.data?.message ||
                     "Failed to update student"
                 );

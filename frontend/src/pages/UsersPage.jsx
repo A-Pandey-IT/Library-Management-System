@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import ActionsDropdown from "../components/ActionsDropdown";
 import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 function UsersPage({
     refreshData,
@@ -59,7 +60,7 @@ function UsersPage({
                     error
                 );
 
-                alert(
+                toast.error(
                     "Failed to load students"
                 );
 

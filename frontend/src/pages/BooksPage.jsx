@@ -7,6 +7,8 @@ import ActionsDropdown from
 
 import LoadingSpinner from "../components/LoadingSpinner";
 
+import toast from "react-hot-toast";
+
 function BooksPage({
     onEditBook,
     onDeleteBook,
@@ -51,6 +53,7 @@ function BooksPage({
         async () => {
 
             try {
+                setLoading(true);
 
                 const response =
                     await api.get(
@@ -71,7 +74,7 @@ function BooksPage({
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Failed to load books"
                 );
 
@@ -141,17 +144,10 @@ function BooksPage({
         };
 
     if (loading) {
-
         return (
-            <h2>
-                Loading Books...
-            </h2>
-        );
-    }
-
-    if (loading) {
-        return (
-            <LoadingSpinner />
+            <LoadingSpinner
+                text="Loading books..."
+            />
         );
     }
 

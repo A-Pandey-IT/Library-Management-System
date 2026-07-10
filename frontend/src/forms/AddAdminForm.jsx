@@ -1,6 +1,8 @@
 import { useState } from "react";
 import api from "../services/api";
 
+import toast from "react-hot-toast";
+
 function AddAdminForm({
 
     onClose,
@@ -45,7 +47,7 @@ function AddAdminForm({
 
             );
 
-            alert("Admin created.");
+            toast.success("Admin created.");
 
             onSuccess?.();
 
@@ -53,12 +55,9 @@ function AddAdminForm({
 
         } catch (error) {
 
-            alert(
-
+            toast.error(
                 error.response?.data?.message ||
-
                 "Failed."
-
             );
 
         }

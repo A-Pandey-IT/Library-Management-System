@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import ActionsDropdown from "../components/ActionsDropdown";
 import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 function PurchasePage({
     refreshData,
@@ -33,6 +34,8 @@ function PurchasePage({
 
             try {
 
+                setLoading(true);
+
                 const response =
                     await api.get(
                         "/purchase"
@@ -51,7 +54,7 @@ function PurchasePage({
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Failed to load purchases"
                 );
 
@@ -120,15 +123,6 @@ function PurchasePage({
                 ),
             0
         );
-
-    if (loading) {
-
-        return (
-            <h2>
-                Loading Purchases...
-            </h2>
-        );
-    }
 
     if (loading) {
         return (

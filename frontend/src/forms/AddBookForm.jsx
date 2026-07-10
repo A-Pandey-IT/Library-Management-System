@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { FaSpinner } from "react-icons/fa";
 import api from "../services/api";
+import toast from "react-hot-toast";
 
 function AddBookForm({
     onSuccess,
@@ -36,17 +38,17 @@ function AddBookForm({
             e.preventDefault();
 
             if (!formData.title.trim()) {
-                alert("Title is required");
+                toast.error("Title is required");
                 return;
             }
 
             if (!formData.author.trim()) {
-                alert("Author is required");
+                toast.error("Author is required");
                 return;
             }
 
             if (!formData.category.trim()) {
-                alert("Category is required");
+                toast.error("Category is required");
                 return;
             }
 
@@ -70,7 +72,7 @@ function AddBookForm({
                         }
                     );
 
-                alert(
+                toast.success(
                     response.data.message ||
                     "Book added successfully"
                 );
@@ -83,7 +85,7 @@ function AddBookForm({
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     error.response?.data?.message ||
                     "Failed to add book"
                 );
@@ -188,21 +190,40 @@ function AddBookForm({
             <button
                 type="submit"
                 disabled={loading}
-                className="
-                    bg-green-600
-                    text-white
+                className={`
+                    w-full
                     py-3
                     rounded
+                    text-white
+                    flex
+                    justify-center
+                    items-center
+                    gap-2
 
-                    hover:bg-green-700
-                    disabled:bg-gray-400
-                "
+                    ${
+                        loading
+                            ? "bg-blue-400 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700"
+                    }
+                `}
             >
+
                 {
                     loading
-                        ? "Saving..."
-                        : "Add Book"
+                        ? ( 
+                            <>
+                                <FaSpinner
+                                    className="animate-spin"
+                                />
+
+                                Adding Book...
+                            </>
+                        )
+                        : (
+                            "Add Book"
+                        )
                 }
+
             </button>
 
         </form>

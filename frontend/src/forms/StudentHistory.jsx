@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function StudentHistory({
     student
@@ -25,6 +26,7 @@ function StudentHistory({
         async () => {
 
             try {
+                setLoading(true);
 
                 const response =
                     await api.get(
@@ -47,9 +49,7 @@ function StudentHistory({
 
     if(loading){
         return (
-            <p>
-                Loading history...
-            </p>
+            <LoadingSpinner />
         );
     }
 

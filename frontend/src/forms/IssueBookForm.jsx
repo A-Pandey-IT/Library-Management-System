@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
+import { FaSpinner } from "react-icons/fa";
 import api from "../services/api";
+import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 function IssueBookForm({
     student,
@@ -25,6 +28,7 @@ function IssueBookForm({
 
     const fetchBooks = async () => {
         try {
+            setLoading(true);
             const response =
                 await api.get("/books");
 
@@ -41,7 +45,7 @@ function IssueBookForm({
         } catch (error) {
             console.error(error);
 
-            alert(
+            toast.error(
                 "Failed to load books"
             );
 
@@ -58,14 +62,14 @@ function IssueBookForm({
             if (issuing) return;
 
             if (!student) {
-                alert(
+                toast.error(
                     "Student not selected"
                 );
                 return;
             }
 
             if (!selectedBook) {
-                alert(
+                toast.error(
                     "Please select a book"
                 );
                 return;
@@ -87,7 +91,7 @@ function IssueBookForm({
                         }
                     );
 
-                alert(
+                toast.success(
                     response.data.message
                 );
 
@@ -101,7 +105,7 @@ function IssueBookForm({
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     error.response?.data
                         ?.message ||
                     "Failed to issue book"
@@ -115,14 +119,9 @@ function IssueBookForm({
 
     if (loading) {
         return (
-            <div
-                className="
-                    p-4
-                    text-center
-                "
-            >
-                Loading books...
-            </div>
+            <LoadingSpinner
+                text="Loading books..."
+            />
         );
     }
 
@@ -304,27 +303,41 @@ function IssueBookForm({
 
                 <button
                     type="submit"
-                    disabled={
-                        issuing ||
-                        !selectedBook
-                    }
-                    className="
-                        bg-green-600
-                        text-white
+                    disabled={issuing}
+                    className={`
+                        w-full
                         py-3
                         rounded
+                        text-white
+                        flex
+                        justify-center
+                        items-center
+                        gap-2
 
-                        hover:bg-green-700
-
-                        disabled:bg-gray-400
-                        disabled:cursor-not-allowed
-                    "
+                        ${
+                            issuing
+                                ? "bg-green-400 cursor-not-allowed"
+                                : "bg-green-600 hover:bg-green-700"
+                        }
+                    `}
                 >
+
                     {
                         issuing
-                            ? "Issuing..."
-                            : "Issue Book"
+                            ? (
+                                <>
+                                    <FaSpinner
+                                        className="animate-spin"
+                                    />
+
+                                    Issuing Book...
+                                </>
+                            )
+                            : (
+                                "Issue Book"
+                            )
                     }
+
                 </button>
 
             </form>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../services/api";
+import toast from "react-hot-toast";
 
 function AddStudentForm({
     onSuccess,
@@ -39,7 +40,8 @@ function AddStudentForm({
                     !formData.name.trim()
                 ) {
 
-                    alert(
+                    toast.error
+                    (
                         "Name is required"
                     );
 
@@ -50,7 +52,7 @@ function AddStudentForm({
                     !formData.email.trim()
                 ) {
 
-                    alert(
+                    toast.error(
                         "Email is required"
                     );
 
@@ -65,7 +67,7 @@ function AddStudentForm({
                         formData
                     );
 
-                alert(
+                toast.success(
                     response.data.message ||
                     "Student added successfully"
                 );
@@ -80,7 +82,7 @@ function AddStudentForm({
                     error
                 );
 
-                alert(
+                toast.error(
                     error.response?.data?.message ||
                     "Failed to add student"
                 );

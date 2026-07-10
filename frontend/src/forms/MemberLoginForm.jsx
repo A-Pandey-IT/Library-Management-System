@@ -6,6 +6,8 @@ import {
 
 import api from "../services/api";
 
+import toast from "react-hot-toast";
+
 function MemberLoginForm({
 
     setIsLoggedIn,
@@ -90,7 +92,7 @@ function MemberLoginForm({
                 setIsLoggedIn(true);
 
                 if (forcePasswordChange) {
-                    alert(
+                    toast(
                         "You must change your password before continuing."
                     );
                 }
@@ -99,7 +101,7 @@ function MemberLoginForm({
 
             } catch (error) {
 
-                alert(
+                toast.error(
 
                     error.response?.data?.message ||
 

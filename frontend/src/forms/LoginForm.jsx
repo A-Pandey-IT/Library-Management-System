@@ -6,6 +6,8 @@ import {
 
 import api from "../services/api";
 
+import toast from "react-hot-toast";
+
 function LoginForm({
     setIsLoggedIn,
     onSuccess
@@ -85,7 +87,7 @@ function LoginForm({
 
             } catch (error) {
 
-                alert(
+                toast.error(
                     error.response?.data?.message ||
                     "Unable to login."
                 );

@@ -3,6 +3,8 @@ import api from "../services/api";
 
 import LoadingSpinner from "../components/LoadingSpinner";
 
+import toast from "react-hot-toast";
+
 function AdminManagementPage({
 
     refreshData,
@@ -38,7 +40,7 @@ function AdminManagementPage({
 
         } catch (error) {
 
-            alert(
+            toast.error(
                 error.response?.data?.message ||
                 "Failed to fetch admins."
             );

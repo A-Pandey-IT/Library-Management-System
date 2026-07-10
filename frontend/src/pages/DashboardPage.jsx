@@ -53,7 +53,7 @@ import EditStudentForm from "../forms/EditStudentForm";
 
 import StudentHistory from "../forms/StudentHistory";
 
-import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 function DashboardPage({
 
@@ -248,7 +248,7 @@ function DashboardPage({
                     `/students/${studentId.id}`
                 );
 
-                alert(
+                toast.success(
                     "Student deleted"
                 );
 
@@ -256,7 +256,7 @@ function DashboardPage({
 
             }catch(error){
 
-                alert(
+                toast.error(
                     error.response?.data?.message
                 );
             }
@@ -280,7 +280,7 @@ function DashboardPage({
                 `/books/${book.id}`
             );
 
-            alert(
+            toast.success(
                 "Book deleted successfully"
             );
 
@@ -290,7 +290,7 @@ function DashboardPage({
 
         } catch (error) {
 
-            alert(
+            toast.error(
                 error.response?.data?.message ||
                 "Failed to delete book"
             );
@@ -309,25 +309,19 @@ function DashboardPage({
             await api.delete(
                 `/admin/${admin.id}`
             );
-            alert(
+            toast.success(
                 "Admin deleted."
             );
             setRefreshData(
                 prev => !prev
             );
         } catch (error) {
-            alert(
+            toast.error(
                 error.response?.data?.message ||
                 "Delete failed."
             );
         }
     };
-
-    if (loading) {
-        return (
-            <LoadingSpinner />
-        );
-    }
 
     return (
         <>

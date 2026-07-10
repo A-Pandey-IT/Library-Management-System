@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 function HomeDashboard() {
 
@@ -29,6 +31,8 @@ function HomeDashboard() {
         async () => {
 
             try {
+
+                setLoading(true);
 
                 const [
                     statsResponse,
@@ -62,7 +66,7 @@ function HomeDashboard() {
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Failed to load dashboard"
                 );
 
@@ -75,14 +79,7 @@ function HomeDashboard() {
     if (loading) {
 
         return (
-            <div
-                className="
-                    text-center
-                    text-xl
-                "
-            >
-                Loading Dashboard...
-            </div>
+            <LoadingSpinner />
         );
     }
 
