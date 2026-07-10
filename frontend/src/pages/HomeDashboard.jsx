@@ -5,9 +5,13 @@ import toast from "react-hot-toast";
 
 function HomeDashboard() {
 
-    const [stats,
-        setStats] =
-        useState(null);
+    const [stats, setStats] = useState({
+        totalBooks: 0,
+        totalStudents: 0,
+        totalIssuedBooks: 0,
+        totalPurchases: 0,
+        totalRevenue: 0
+    });
 
     const [recentTransactions,
         setRecentTransactions] =
@@ -82,6 +86,10 @@ function HomeDashboard() {
             <LoadingSpinner />
         );
     }
+
+    if (!stats) {
+    return null;
+}
 
     return (
 

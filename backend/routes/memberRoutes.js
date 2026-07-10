@@ -17,10 +17,6 @@ router.post("/login", loginMember);
 
 router.put(
     "/changeUserPassword",
-    (req, res, next) => {
-        console.log("Reached member change password route");
-        next();
-    },
     verifyMemberToken,
     changeUserPassword
 );

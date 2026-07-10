@@ -84,8 +84,6 @@ function ChangePasswordForm({
                     currentPassword: formData.currentPassword,
                     newPassword: formData.newPassword
                 };
-            console.log("Endpoint:", endpoint);
-            console.log("Request Body:", requestBody);
 
             await api.put(
                 endpoint,

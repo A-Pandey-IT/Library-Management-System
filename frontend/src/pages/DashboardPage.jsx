@@ -148,7 +148,6 @@ function DashboardPage({
         setSidebarOpen(false);
         setIsLoggedIn(false);
 
-        setRefreshData(prev => !prev);
         window.location.reload();
     };
 
