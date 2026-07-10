@@ -1,40 +1,46 @@
 const jwt = require("jsonwebtoken");
 
-const verifyToken = (
-    req,
-    res,
-    next
-) => {
+const verifyToken = (req, res, next) => {
 
-    const authHeader =
-        req.headers.authorization;
+    console.log("===== VERIFY TOKEN =====");
+    console.log("Headers:", req.headers);
+
+    const authHeader = req.headers.authorization;
+
+    console.log("Authorization:", authHeader);
 
     if (
         !authHeader ||
         !authHeader.startsWith("Bearer ")
     ) {
+        console.log("NO AUTH HEADER");
+
         return res.status(401).json({
             success: false,
             message: "Access denied"
         });
     }
 
-    const token =
-        authHeader.split(" ")[1];
+    const token = authHeader.split(" ")[1];
+
+    console.log("Token:", token);
 
     try {
 
-        const decoded =
-            jwt.verify(
-                token,
-                process.env.JWT_SECRET
-            );
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
+
+        console.log("Decoded:", decoded);
 
         req.admin = decoded;
 
         next();
 
-    } catch {
+    } catch (error) {
+
+        console.log("JWT Error:", error.message);
 
         return res.status(401).json({
             success: false,
