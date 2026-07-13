@@ -10,6 +10,7 @@ const {
 const {
     registerAdmin,
     loginAdmin,
+    sendOTP,
     changePassword,
     deleteAdmin,
     getAllAdmins
@@ -25,6 +26,12 @@ router.post(
 router.post(
     "/login",
     loginAdmin
+);
+
+router.post(
+    "/send-otp",
+    verifyToken,
+    sendOTP
 );
 
 router.put(

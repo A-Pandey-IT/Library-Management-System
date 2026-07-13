@@ -6,6 +6,15 @@ const jwt = require("jsonwebtoken");
 const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
 
+const {
+    generateOTP,
+    getOTPExpiryTime
+} = require("../utils/otpGenerator");
+
+const {
+    sendOTPEmail
+} = require("../services/emailService");
+
 const registerAdmin = async (req, res) => {
     try {
         const { username, password, role } = req.body;
@@ -456,9 +465,147 @@ const getAllAdmins = async (req, res) => {
 
 };
 
+const sendOTP = async (req, res) => {
+
+    try {
+
+        const { email, purpose } = req.body;
+
+        if (!email || !purpose) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Email and purpose are required."
+
+            });
+
+        }
+
+        if (
+            purpose !== "CHANGE_PASSWORD" &&
+            purpose !== "FORGOT_PASSWORD"
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Invalid OTP purpose."
+
+            });
+
+        }
+
+        const [rows] =
+            await db.query(
+
+                `
+                SELECT
+                    id,
+                    username,
+                    email
+                FROM admins
+                WHERE email = ?
+                `,
+                [email]
+
+            );
+
+        if (rows.length === 0) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "No account found with this email."
+
+            });
+
+        }
+
+        // Delete previous OTP
+
+        await db.query(
+
+            `
+            DELETE FROM password_otps
+            WHERE email = ?
+            `,
+            [email]
+
+        );
+
+        const otp =
+            generateOTP();
+
+        const expiresAt =
+            getOTPExpiryTime();
+
+        await db.query(
+
+            `
+            INSERT INTO password_otps
+            (
+                email,
+                otp,
+                purpose,
+                expires_at
+            )
+            VALUES
+            (
+                ?, ?, ?, ?
+            )
+            `,
+
+            [
+                email,
+                otp,
+                purpose,
+                expiresAt
+            ]
+
+        );
+
+        await sendOTPEmail(
+            email,
+            otp
+        );
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "OTP sent successfully."
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Failed to send OTP."
+
+        });
+
+    }
+
+};
+
 module.exports = {
    registerAdmin,
    loginAdmin,
+   sendOTP,
    changePassword,
    deleteAdmin,
    getAllAdmins
