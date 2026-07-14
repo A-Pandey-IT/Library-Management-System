@@ -3,7 +3,11 @@ const nodemailer = require("nodemailer");
 const transporter =
     nodemailer.createTransport({
 
-        service: "gmail",
+        host: "smtp.gmail.com",
+
+        port: 587,
+
+        secure: false,
 
         auth: {
 
@@ -15,8 +19,7 @@ const transporter =
 
     });
 
-const sendOTPEmail =
-async (
+const sendOTPEmail = async (
     email,
     otp
 ) => {
@@ -42,10 +45,6 @@ async (
                 <strong>10 minutes</strong>.
             </p>
 
-            <p>
-                If you did not request this OTP,
-                please ignore this email.
-            </p>
         `
 
     });
