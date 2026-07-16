@@ -3,38 +3,35 @@ const nodemailer = require("nodemailer");
 const transporter =
     nodemailer.createTransport({
 
-        host: "smtp.gmail.com",
+        host:
+            process.env.BREVO_SMTP_HOST,
 
-        port: 587,
+        port:
+            Number(process.env.BREVO_SMTP_PORT),
 
         secure: false,
 
         auth: {
 
-            user: process.env.EMAIL_USER,
+            user:
+                process.env.BREVO_SMTP_USER,
 
-            pass: process.env.EMAIL_PASSWORD
+            pass:
+                process.env.BREVO_SMTP_KEY
 
         }
 
     });
 
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("SMTP Error:", error);
-    } else {
-        console.log("SMTP Server is ready");
-    }
-});
-
-const sendOTPEmail = async (
+const sendOTPEmail =
+async (
     email,
     otp
 ) => {
 
     await transporter.sendMail({
 
-        from: process.env.EMAIL_USER,
+        from: `"Library Management System" <${process.env.BREVO_SMTP_USER}>`,
 
         to: email,
 
@@ -53,6 +50,10 @@ const sendOTPEmail = async (
                 <strong>10 minutes</strong>.
             </p>
 
+            <p>
+                If you did not request this OTP,
+                please ignore this email.
+            </p>
         `
 
     });
