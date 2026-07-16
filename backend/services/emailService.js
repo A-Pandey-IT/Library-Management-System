@@ -19,6 +19,14 @@ const transporter =
 
     });
 
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("SMTP Error:", error);
+    } else {
+        console.log("SMTP Server is ready");
+    }
+});
+
 const sendOTPEmail = async (
     email,
     otp
