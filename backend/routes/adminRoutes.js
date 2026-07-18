@@ -56,7 +56,5 @@ router.get(
 
 module.exports = router;
 
-/*
-admin
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoxLCJ1c2VybmFtZSI6ImxpYnJhcmlhbiIsInJvbGUiOiJMSUJSQVJJQU4iLCJpYXQiOjE3ODMxNTYzMTQsImV4cCI6MTc4MzI0MjcxNH0.iFYaVxbOwmL8VIeC3BexE8Ve9cvqGlTjTJnABjKGxqc
-*/
+
+

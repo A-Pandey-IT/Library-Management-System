@@ -571,9 +571,6 @@ const sendOTP = async (req, res) => {
 
         );
 
-        console.log("EMAIL_USER:", process.env.EMAIL_USER);
-        console.log("EMAIL_HOST:", process.env.EMAIL_HOST);
-
         await sendOTPEmail(
             email,
             otp
@@ -590,7 +587,13 @@ const sendOTP = async (req, res) => {
 
     } catch (error) {
 
-        console.error(error);
+        console.error(error.message);
+
+if (error.response) {
+    console.error(error.response);
+}
+
+console.error(error);
 
         return res.status(500).json({
 
