@@ -1,8 +1,10 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import { useState, useEffect } from "react";
 
-import LoginPage from "./pages/LoginPage";
-
 import DashboardPage from "./pages/DashboardPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 import { Toaster } from "react-hot-toast";
 
@@ -42,17 +44,37 @@ function App() {
     }, []);
 
     return (
-        <>
-            <DashboardPage
-                isLoggedIn={isLoggedIn}
-                setIsLoggedIn={setIsLoggedIn}
+        <BrowserRouter>
 
-                userType={userType}
-                setUserType={setUserType}
+            <Routes>
 
-                role={role}
-                setRole={setRole}
-            />
+                <Route
+                    path="/"
+                    element={
+                        <DashboardPage
+                            isLoggedIn={isLoggedIn}
+                            setIsLoggedIn={setIsLoggedIn}
+
+                            userType={userType}
+                            setUserType={setUserType}
+
+                            role={role}
+                            setRole={setRole}
+                        />
+                    }
+                />
+
+                <Route
+                    path="/forgot-password"
+                    element={<ForgotPasswordPage />}
+                />
+
+                <Route
+                    path="/reset-password"
+                    element={<ResetPasswordPage />}
+                />
+
+            </Routes>
 
             <Toaster
                 position="top-right"
@@ -66,7 +88,8 @@ function App() {
                     },
                 }}
             />
-        </>
+
+        </BrowserRouter>
     );
 }
 

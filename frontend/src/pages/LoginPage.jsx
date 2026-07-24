@@ -1,9 +1,13 @@
 import AuthLayout from "../layouts/AuthLayout";
 import LoginForm from "../forms/LoginForm";
+import { Link } from "react-router-dom";
+
 
 function LoginPage({
-    setIsLoggedIn
+    setIsLoggedIn,
+    onClose
 }) {
+    const navigate = useNavigate();
 
     return (
 
@@ -38,7 +42,15 @@ function LoginPage({
                     setIsLoggedIn
                 }
             />
-
+            <button
+                type="button"
+                onClick={() => {
+                    onClose?.();
+                    navigate("/forgot-password");
+                }}
+            >
+                Forgot Password?
+            </button>
         </AuthLayout>
 
     );

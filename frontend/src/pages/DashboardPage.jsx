@@ -833,6 +833,8 @@ function DashboardPage({
 
                         }
                     }
+
+                    onClose={() => setShowLogin(false)}
                 />
 
             </Modal>

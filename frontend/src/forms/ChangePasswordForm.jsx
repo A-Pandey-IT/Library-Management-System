@@ -82,7 +82,8 @@ function ChangePasswordForm({
                 }
                 : {
                     currentPassword: formData.currentPassword,
-                    newPassword: formData.newPassword
+                    newPassword: formData.newPassword,
+                    confirmPassword: formData.confirmPassword
                 };
 
             await api.put(
