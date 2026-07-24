@@ -19,7 +19,14 @@ function getOTPExpiryTime() {
 
 }
 
+function isOTPExpired(expiresAt) {
+
+    return new Date() > new Date(expiresAt);
+
+}
+
 module.exports = {
     generateOTP,
-    getOTPExpiryTime
+    getOTPExpiryTime,
+    isOTPExpired
 };

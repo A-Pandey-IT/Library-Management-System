@@ -1,15 +1,20 @@
 const bcrypt = require("bcrypt");
 const db = require("../config/db");
-
 const jwt = require("jsonwebtoken");
 
 const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
 
+const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
 const {
     generateOTP,
-    getOTPExpiryTime
+    getOTPExpiryTime,
+    isOTPExpired
 } = require("../utils/otpGenerator");
+
 
 const {
     sendOTPEmail
@@ -17,8 +22,9 @@ const {
 
 const registerAdmin = async (req, res) => {
     try {
-        const { username, password, role } = req.body;
+        const { username, email, password, role } = req.body;
         const usernameValue = username?.trim();
+        const emailValue = email?.trim().toLowerCase();
         const passwordValue = password?.trim();
         const adminRole =  role || "ADMIN";
 
@@ -62,6 +68,13 @@ const registerAdmin = async (req, res) => {
                 "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
         });
 
+        if(!emailValue ||!emailRegex.test(emailValue)){
+            return res.status(400)({
+                success: false,
+                message: "Valid email address is required."
+            });
+        }
+
 }
 
         const [existing] = await db.query(
@@ -87,13 +100,15 @@ const registerAdmin = async (req, res) => {
             INSERT INTO admins
             (
                 username,
+                email,
                 password,
                 role
             )
-            VALUES (?, ?, ?)
+            VALUES (?, ?, ?, ?)
             `,
             [
                 usernameValue,
+                emailValue,
                 hashedPassword,
                 adminRole
             ]
@@ -213,30 +228,32 @@ const changePassword = async (req, res) => {
 
     try {
 
+        const adminId = req.user.id;
+
         const {
             currentPassword,
-            newPassword
+            newPassword,
+            confirmPassword
         } = req.body;
-
-        const adminId =
-            req.admin.adminId;
 
         if (
             !currentPassword ||
-            !newPassword
+            !newPassword ||
+            !confirmPassword
         ) {
+
             return res.status(400).json({
                 success: false,
-                message: "All fields are required"
+                message: "All fields are required."
             });
+
         }
 
-        if (currentPassword === newPassword) {
+        if (newPassword !== confirmPassword) {
 
             return res.status(400).json({
                 success: false,
-                message:
-                    "New password must be different from the current password."
+                message: "Passwords do not match."
             });
 
         }
@@ -245,15 +262,14 @@ const changePassword = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message:
-                    "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+                message: "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
             });
 
         }
 
         const [rows] = await db.query(
             `
-            SELECT *
+            SELECT password
             FROM admins
             WHERE id = ?
             `,
@@ -261,46 +277,48 @@ const changePassword = async (req, res) => {
         );
 
         if (rows.length === 0) {
+
             return res.status(404).json({
                 success: false,
-                message: "Admin not found"
+                message: "Admin not found."
             });
+
         }
 
         const admin = rows[0];
 
-        const validPassword =
-            await bcrypt.compare(
-                currentPassword,
-                admin.password
-            );
+        const validPassword = await bcrypt.compare(
+            currentPassword,
+            admin.password
+        );
 
         if (!validPassword) {
+
             return res.status(401).json({
                 success: false,
-                message: "Current password is incorrect"
+                message: "Current password is incorrect."
             });
+
         }
 
-        const samePassword =
-            await bcrypt.compare(
-                newPassword,
-                admin.password
-            );
+        const samePassword = await bcrypt.compare(
+            newPassword,
+            admin.password
+        );
 
         if (samePassword) {
+
             return res.status(400).json({
                 success: false,
-                message:
-                    "New password must be different from current password"
+                message: "New password must be different from the current password."
             });
+
         }
 
-        const hashedPassword =
-            await bcrypt.hash(
-                newPassword,
-                10
-            );
+        const hashedPassword = await bcrypt.hash(
+            newPassword,
+            10
+        );
 
         await db.query(
             `
@@ -316,18 +334,128 @@ const changePassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Password changed successfully"
+            message: "Password changed successfully."
         });
 
     } catch (error) {
 
+        console.error(error);
+
         return res.status(500).json({
             success: false,
-            message: "Error changing password",
-            error: error.message
+            message: "Failed to change password."
         });
 
     }
+
+};
+
+const resetPassword = async (req, res) => {
+
+    try {
+
+        const { adminId } = req.resetUser;
+
+        const {
+            newPassword,
+            confirmPassword
+        } = req.body;
+
+        if (
+            !newPassword ||
+            !confirmPassword
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required."
+            });
+
+        }
+
+        if (newPassword !== confirmPassword) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Passwords do not match."
+            });
+
+        }
+
+        if (!passwordRegex.test(newPassword)) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+            });
+
+        }
+
+        const [rows] = await db.query(
+            `
+            SELECT password
+            FROM admins
+            WHERE id = ?
+            `,
+            [adminId]
+        );
+
+        if (rows.length === 0) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found."
+            });
+
+        }
+
+        const samePassword = await bcrypt.compare(
+            newPassword,
+            rows[0].password
+        );
+
+        if (samePassword) {
+
+            return res.status(400).json({
+                success: false,
+                message: "New password must be different from the previous password."
+            });
+
+        }
+
+        const hashedPassword = await bcrypt.hash(
+            newPassword,
+            10
+        );
+
+        await db.query(
+            `
+            UPDATE admins
+            SET password = ?
+            WHERE id = ?
+            `,
+            [
+                hashedPassword,
+                adminId
+            ]
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successfully."
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to reset password."
+        });
+
+    }
+
 };
 
 const deleteAdmin = async (req, res) => {
@@ -471,7 +599,9 @@ const sendOTP = async (req, res) => {
 
         const { email, purpose } = req.body;
 
-        if (!email || !purpose) {
+        const emailValue = email?.trim().toLowerCase();
+
+        if (!emailValue || !purpose) {
 
             return res.status(400).json({
 
@@ -482,6 +612,13 @@ const sendOTP = async (req, res) => {
 
             });
 
+        }
+
+        if (!emailRegex.test(emailValue)){
+            return res.status(400).json({
+                success: false,
+                message: "Please enter a valid email address."
+            })
         }
 
         if (
@@ -511,7 +648,7 @@ const sendOTP = async (req, res) => {
                 FROM admins
                 WHERE email = ?
                 `,
-                [email]
+                [emailValue]
 
             );
 
@@ -536,7 +673,7 @@ const sendOTP = async (req, res) => {
             DELETE FROM password_otps
             WHERE email = ?
             `,
-            [email]
+            [emailValue]
 
         );
 
@@ -563,7 +700,7 @@ const sendOTP = async (req, res) => {
             `,
 
             [
-                email,
+                emailValue,
                 otp,
                 purpose,
                 expiresAt
@@ -572,7 +709,7 @@ const sendOTP = async (req, res) => {
         );
 
         await sendOTPEmail(
-            email,
+            emailValue,
             otp
         );
 
@@ -589,30 +726,171 @@ const sendOTP = async (req, res) => {
 
         console.error(error.message);
 
-if (error.response) {
-    console.error(error.response);
-}
+        if (error.response) {
+            console.error(error.response);
+        }
 
-console.error(error);
+        console.error(error);
 
         return res.status(500).json({
-
             success: false,
+            message: "Failed to send OTP."
+        });
+    }
+};
 
-            message:
-                "Failed to send OTP."
+const verifyOTP = async (req, res) => {
 
+    try {
+
+        const { email, otp } = req.body;
+
+        const emailValue = email?.trim().toLowerCase();
+
+        if(!emailValue || !otp){
+            return res.status(400).json({
+                success: false,
+                message: "Email and OTP are required."
+            });
+        }
+        if(!emailRegex.test(emailValue)){
+            return res.status(400).json({
+                success: false,
+                message: "Please enter a valid email address."
+            });
+        }
+
+        // Step 1: Check admin exists
+
+        const [rows] = await db.query(
+          `
+          SELECT 
+            id,
+            username,
+            email
+          FROM admins
+          WHERE email = ?
+          `, [emailValue] 
+        );
+
+        if(rows.length === 0){
+            return res.status(404).json({
+                success: false,
+                message: "No account found with this email"
+            });
+        }
+
+        // Step 2: Get latest OTP
+
+        const [otpRows] = await db.query(
+            `
+            SELECT
+                id,
+                otp,
+                purpose,
+                expires_at,
+                verified,
+                created_at
+            FROM password_otps
+            WHERE email = ? AND purpose = 'FORGOT_PASSWORD'
+            ORDER BY created_at DESC
+            LIMIT 1
+            `,[emailValue]
+        );
+
+        if(otpRows.length === 0){
+            return res.status(404).json({
+                success: false,
+                message: "No OTP found. Please request a new OTP."
+            });
+        }
+
+        const otpRecord = otpRows[0];
+
+        if (otpRecord.purpose !== "FORGOT_PASSWORD") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP purpose."
+            });
+        }
+
+        // Step 3: Check expiry
+
+        if(isOTPExpired(otpRecord.expires_at)){
+            return res.status(400).json({
+                success: false,
+                message: "OTP is expired. Please request a new OTP"
+            });
+        }
+
+        // Step 4: Compare OTP
+
+        if(otpRecord.verified){
+            return res.status(400).json({
+                success: false,
+                message: "OTP has already been used."
+            })
+        }
+
+        if (otpRecord.otp !== otp) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP."
+            });
+
+        }
+
+        // Step 5: Delete OTP
+
+        await db.query(
+            `
+                UPDATE password_otps
+                SET verified = TRUE
+                WHERE id = ? 
+            `,
+                [otpRecord.id]
+            );
+
+
+        // Step 6: Success
+        const resetToken = jwt.sign({
+            adminId: rows[0].id,
+            email: emailValue,
+            purpose: "RESET_PASSWORD",
+            type: "RESET_TOKEN"
+            },
+                process.env.RESET_PASSWORD_SECRET,
+            {
+                expiresIn: "10m"
+            }
+        );
+        return res.status(200).json({
+            success: true,
+            message: "OTP verified successfully.",
+            resetToken
         });
 
-    }
+    } catch (error) {
 
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to verify OTP.",
+            error: error.message
+        });
+    }
 };
+
 
 module.exports = {
    registerAdmin,
    loginAdmin,
    sendOTP,
+   verifyOTP,
    changePassword,
+   resetPassword,
    deleteAdmin,
    getAllAdmins
 }

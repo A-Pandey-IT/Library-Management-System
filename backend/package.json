@@ -20,6 +20,7 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.22.5",
     "nodemailer": "^9.0.3",
+    "react-router-dom": "^7.18.1",
     "sib-api-v3-sdk": "^8.5.0"
   },
   "devDependencies": {
