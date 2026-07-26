@@ -63,19 +63,20 @@ const registerAdmin = async (req, res) => {
         if (!passwordRegex.test(passwordValue)) {
 
             return res.status(400).json({
-            success: false,
-            message:
-                "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
-        });
+                success: false,
+                message:
+                    "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+            });
+        }
 
         if(!emailValue ||!emailRegex.test(emailValue)){
-            return res.status(400)({
+            return res.status(400).json({
                 success: false,
                 message: "Valid email address is required."
             });
         }
 
-}
+
 
         const [existing] = await db.query(
             `
@@ -228,7 +229,7 @@ const changePassword = async (req, res) => {
 
     try {
 
-        const adminId = req.user.id;
+        const adminId = req.admin.adminId;
 
         const {
             currentPassword,
@@ -339,11 +340,11 @@ const changePassword = async (req, res) => {
 
     } catch (error) {
 
-        console.error(error);
+        console.error("Change Password Error:", error);
 
         return res.status(500).json({
             success: false,
-            message: "Failed to change password."
+            message: error.message
         });
 
     }
