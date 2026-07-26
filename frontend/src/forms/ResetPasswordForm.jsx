@@ -10,10 +10,7 @@ function ResetPasswordForm({ userType = "admin" }) {
             ? "/member"
             : "/admin";
 
-    const loginRoute =
-        userType === "member"
-            ? "/member/login"
-            : "/";
+    const loginRoute = "/";
 
     const forgotPasswordRoute =
         userType === "member"
