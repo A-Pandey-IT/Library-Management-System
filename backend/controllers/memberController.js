@@ -12,7 +12,8 @@ const {
 
 const {
     generateOTP,
-    getOTPExpiryTime
+    getOTPExpiryTime,
+    isOTPExpired
 } = require("../utils/otpGenerator");
 
 const {
