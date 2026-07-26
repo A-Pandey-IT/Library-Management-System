@@ -1,8 +1,7 @@
 import AuthLayout
     from "../../components/auth/AuthLayout";
 
-import ResetPasswordForm
-    from "../../components/auth/ResetPasswordForm";
+import ResetPasswordForm from "../../forms/ResetPasswordForm";
 
 const MemberResetPasswordPage = () => {
 
