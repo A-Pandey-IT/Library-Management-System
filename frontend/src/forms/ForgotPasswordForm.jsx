@@ -273,9 +273,7 @@ function ForgotPasswordForm({ userType = "admin" }) {
             <div className="text-center mt-6">
                 <Link
                     to={
-                        userType === "member"
-                            ? "/member/login"
-                            : "/"
+                        "/"
                     }
                     className="
                         text-blue-600
