@@ -1,4 +1,4 @@
-import AuthLayout from "../../components/auth/AuthLayout";
+import AuthLayout from "../../layouts/AuthLayout";
 import ForgotPasswordForm from "../../forms/ForgotPasswordForm";
 function MemberForgotPasswordPage() {
 

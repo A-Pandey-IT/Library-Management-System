@@ -1,5 +1,4 @@
-import AuthLayout
-    from "../../components/auth/AuthLayout";
+import AuthLayout from "../../layouts/AuthLayout";
 
 import ResetPasswordForm from "../../forms/ResetPasswordForm";
 
