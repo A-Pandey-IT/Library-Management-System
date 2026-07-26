@@ -2,111 +2,98 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-function ForgotPasswordForm() {
-
+function ForgotPasswordForm({ userType = "admin" }) {
     const navigate = useNavigate();
 
+    const baseEndpoint =
+        userType === "member"
+            ? "/member"
+            : "/admin";
+
+    const resetPasswordRoute =
+        userType === "member"
+            ? "/member/reset-password"
+            : "/reset-password";
+
     const [email, setEmail] = useState("");
-
     const [otp, setOtp] = useState("");
-
     const [loading, setLoading] = useState(false);
-
     const [otpSent, setOtpSent] = useState(false);
-
     const [timer, setTimer] = useState(0);
-
     const [message, setMessage] = useState("");
-
     const [error, setError] = useState("");
 
     useEffect(() => {
-
         if (timer <= 0) return;
 
         const interval = setInterval(() => {
-
             setTimer((prev) => prev - 1);
-
         }, 1000);
 
         return () => clearInterval(interval);
-
     }, [timer]);
 
     const formatTime = () => {
-
         const minutes = Math.floor(timer / 60);
-
         const seconds = timer % 60;
 
         return `${minutes}:${seconds
             .toString()
             .padStart(2, "0")}`;
-
     };
 
     const handleSendOTP = async () => {
-
         setLoading(true);
-
         setError("");
-
         setMessage("");
 
         try {
-
             if (!email.trim()) {
                 setError("Email is required.");
                 return;
             }
 
             const res = await api.post(
-                "/admin/send-otp",
+                `${baseEndpoint}/send-otp`,
                 {
                     email: email.trim(),
-                    purpose: "FORGOT_PASSWORD"
+                    purpose: "FORGOT_PASSWORD",
                 }
             );
 
             setMessage(res.data.message);
-
             setOtpSent(true);
-
             setTimer(600);
-
             setOtp("");
-
         } catch (err) {
-
             setError(
                 err.response?.data?.message ||
                 "Failed to send OTP."
             );
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     const handleVerifyOTP = async () => {
-
         setLoading(true);
-
         setError("");
+        setMessage("");
 
-        setError("");
+        sessionStorage.removeItem("resetToken");
 
         try {
 
+            if (!/^\d{6}$/.test(otp.trim())) {
+                setError("Please enter a valid 6-digit OTP.");
+                setLoading(false);
+                return;
+            }
             const res = await api.post(
-                "/admin/verify-otp",
+                `${baseEndpoint}/verify-otp`,
                 {
                     email: email.trim(),
-                    otp
+                    otp: otp.trim(),
                 }
             );
 
@@ -115,45 +102,29 @@ function ForgotPasswordForm() {
                 res.data.resetToken
             );
 
-            navigate("/reset-password");
-
+            navigate(resetPasswordRoute);
         } catch (err) {
-
             setError(
                 err.response?.data?.message ||
                 "OTP verification failed."
             );
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     return (
-
         <>
-
             {message && (
-
                 <p className="text-green-600 text-sm mb-4 text-center">
-
                     {message}
-
                 </p>
-
             )}
 
             {error && (
-
                 <p className="text-red-600 text-sm mb-4 text-center">
-
                     {error}
-
                 </p>
-
             )}
 
             <label
@@ -174,9 +145,7 @@ function ForgotPasswordForm() {
                 placeholder="Enter your email"
                 value={email}
                 disabled={otpSent}
-                onChange={(e) =>
-                    setEmail(e.target.value)
-                }
+                onChange={(e) => setEmail(e.target.value)}
                 className="
                     w-full
                     px-4
@@ -194,7 +163,6 @@ function ForgotPasswordForm() {
             />
 
             {!otpSent && (
-
                 <button
                     onClick={handleSendOTP}
                     disabled={loading}
@@ -210,17 +178,12 @@ function ForgotPasswordForm() {
                         disabled:opacity-50
                     "
                 >
-                    {loading
-                        ? "Sending..."
-                        : "Send OTP"}
+                    {loading ? "Sending..." : "Send OTP"}
                 </button>
-
             )}
 
             {otpSent && (
-
                 <>
-
                     <label
                         className="
                             block
@@ -240,9 +203,7 @@ function ForgotPasswordForm() {
                         maxLength={6}
                         value={otp}
                         placeholder="Enter 6-digit OTP"
-                        onChange={(e) =>
-                            setOtp(e.target.value)
-                        }
+                        onChange={(e) => setOtp(e.target.value)}
                         className="
                             w-full
                             px-4
@@ -283,45 +244,39 @@ function ForgotPasswordForm() {
                     </button>
 
                     <div className="text-center mt-4">
-
                         {timer > 0 ? (
-
                             <p className="text-gray-600 dark:text-gray-300">
-
                                 OTP expires in{" "}
-
                                 <span className="font-semibold">
-
                                     {formatTime()}
-
                                 </span>
-
                             </p>
-
                         ) : (
-
                             <button
                                 onClick={handleSendOTP}
+                                disabled={loading}
                                 className="
                                     text-blue-600
                                     hover:underline
+                                    disabled:opacity-50
                                 "
                             >
-                                Resend OTP
+                                {loading
+                                    ? "Sending..."
+                                    : "Resend OTP"}
                             </button>
-
                         )}
-
                     </div>
-
                 </>
-
             )}
 
             <div className="text-center mt-6">
-
                 <Link
-                    to="/"
+                    to={
+                        userType === "member"
+                            ? "/member/login"
+                            : "/"
+                    }
                     className="
                         text-blue-600
                         hover:underline
@@ -329,13 +284,9 @@ function ForgotPasswordForm() {
                 >
                     Back to Login
                 </Link>
-
             </div>
-
         </>
-
     );
-
 }
 
 export default ForgotPasswordForm;

@@ -5,9 +5,14 @@ const router = express.Router();
 const verifyMemberToken =
 require("../middleware/memberMiddleware");
 
+const verifyResetToken = require("../middleware/verifyResetToken");
+
 const {
     loginMember,
     changeUserPassword,
+    sendMemberOTP,
+    verifyMemberOTP,
+    resetMemberPassword,
     getProfile,
     getMyIssues,
     getMyTransactions
@@ -22,6 +27,12 @@ router.put(
 );
 
 router.get("/profile", verifyMemberToken, getProfile);
+
+router.post("/send-otp",sendMemberOTP);
+
+router.post("/verify-otp", verifyMemberOTP);
+
+router.put("/reset-password", verifyResetToken, resetMemberPassword);
 
 router.get("/issues", verifyMemberToken, getMyIssues);
 

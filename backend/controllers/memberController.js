@@ -4,6 +4,20 @@ const bcrypt = require("bcrypt");
 
 const jwt = require("jsonwebtoken");
 
+const crypto = require("crypto");
+
+const {
+    sendOTPEmail
+} = require("../utils/emailService");
+
+const {
+    generateOTP
+} = require("../utils/generateOTP");
+
+const {
+    verifyResetToken
+} = require("../middleware/verifyResetToken");
+
 const emailRegex =
 /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -254,6 +268,604 @@ const changeUserPassword = async (req, res) => {
 
 };
 
+const sendMemberOTP = async (req, res) => {
+
+    try {
+
+        const {
+            email,
+            purpose
+        } = req.body;
+
+        const emailValue =
+            email?.trim().toLowerCase();
+
+        if (
+            !emailValue ||
+            !purpose
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Email and purpose are required."
+
+            });
+
+        }
+
+        if (
+            !emailRegex.test(emailValue)
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Please enter a valid email address."
+
+            });
+
+        }
+
+        if (
+            purpose !== "CHANGE_PASSWORD" &&
+            purpose !== "FORGOT_PASSWORD"
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Invalid OTP purpose."
+
+            });
+
+        }
+
+        const [rows] =
+            await db.query(
+
+                `
+                SELECT
+                    id,
+                    name,
+                    email
+                FROM students
+                WHERE email = ?
+                `,
+                [emailValue]
+
+            );
+
+        if (
+            rows.length === 0
+        ) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "No account found with this email."
+
+            });
+
+        }
+
+        await db.query(
+
+            `
+            DELETE FROM password_otps
+            WHERE email = ?
+            `,
+            [emailValue]
+
+        );
+
+        const otp =
+            generateOTP();
+
+        const expiresAt =
+            getOTPExpiryTime();
+
+        await db.query(
+
+            `
+            INSERT INTO password_otps
+            (
+                email,
+                otp,
+                purpose,
+                expires_at
+            )
+            VALUES
+            (
+                ?, ?, ?, ?
+            )
+            `,
+
+            [
+                emailValue,
+                otp,
+                purpose,
+                expiresAt
+            ]
+
+        );
+
+        await sendOTPEmail(
+
+            emailValue,
+            otp
+
+        );
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "OTP sent successfully."
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        if (
+            error.response
+        ) {
+
+            console.error(
+                error.response.data
+            );
+
+        }
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Failed to send OTP."
+
+        });
+
+    }
+
+};
+
+const verifyMemberOTP = async (req, res) => {
+
+    try {
+
+        const {
+            email,
+            otp
+        } = req.body;
+
+        const emailValue =
+            email?.trim().toLowerCase();
+
+        if (
+            !emailValue ||
+            !otp
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Email and OTP are required."
+
+            });
+
+        }
+
+        if (
+            !emailRegex.test(emailValue)
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Please enter a valid email address."
+
+            });
+
+        }
+
+        const [rows] =
+            await db.query(
+
+                `
+                SELECT
+                    id,
+                    name,
+                    email
+                FROM students
+                WHERE email = ?
+                `,
+                [emailValue]
+
+            );
+
+        if (
+            rows.length === 0
+        ) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "No account found with this email."
+
+            });
+
+        }
+
+        const [otpRows] =
+            await db.query(
+
+                `
+                SELECT
+                    id,
+                    otp,
+                    purpose,
+                    expires_at,
+                    verified,
+                    created_at
+                FROM password_otps
+                WHERE
+                    email = ?
+                    AND purpose = 'FORGOT_PASSWORD'
+                ORDER BY created_at DESC
+                LIMIT 1
+                `,
+                [emailValue]
+
+            );
+
+        if (
+            otpRows.length === 0
+        ) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "No OTP found. Please request a new OTP."
+
+            });
+
+        }
+
+        const otpRecord =
+            otpRows[0];
+
+        if (
+            otpRecord.purpose !==
+            "FORGOT_PASSWORD"
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Invalid OTP purpose."
+
+            });
+
+        }
+
+        if (
+            isOTPExpired(
+                otpRecord.expires_at
+            )
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "OTP is expired. Please request a new OTP."
+
+            });
+
+        }
+
+        if (
+            otpRecord.verified
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "OTP has already been used."
+
+            });
+
+        }
+
+        if (
+            otpRecord.otp !== otp
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Invalid OTP."
+
+            });
+
+        }
+
+        await db.query(
+
+            `
+            UPDATE password_otps
+            SET verified = TRUE
+            WHERE id = ?
+            `,
+            [
+                otpRecord.id
+            ]
+
+        );
+
+        const resetToken =
+            jwt.sign(
+
+                {
+
+                    memberId:
+                        rows[0].id,
+
+                    email:
+                        emailValue,
+
+                    purpose:
+                        "RESET_PASSWORD",
+
+                    type:
+                        "RESET_TOKEN"
+
+                },
+
+                process.env
+                    .RESET_PASSWORD_SECRET,
+
+                {
+
+                    expiresIn:
+                        "10m"
+
+                }
+
+            );
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "OTP verified successfully.",
+
+            resetToken
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Failed to verify OTP.",
+
+            error:
+                error.message
+
+        });
+
+    }
+
+};
+
+const resetMemberPassword = async (req, res) => {
+
+    try {
+
+        const {
+            memberId
+        } = req.resetUser;
+
+        const {
+
+            newPassword,
+
+            confirmPassword
+
+        } = req.body;
+
+        if (
+
+            !newPassword ||
+
+            !confirmPassword
+
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "All fields are required."
+
+            });
+
+        }
+
+        if (
+            newPassword !==
+            confirmPassword
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Passwords do not match."
+
+            });
+
+        }
+
+        if (
+            !passwordRegex.test(
+                newPassword
+            )
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+
+            });
+
+        }
+
+        const [rows] =
+            await db.query(
+
+                `
+                SELECT password
+                FROM students
+                WHERE id = ?
+                `,
+                [
+                    memberId
+                ]
+
+            );
+
+        if (
+            rows.length === 0
+        ) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "Member not found."
+
+            });
+
+        }
+
+        const samePassword =
+            await bcrypt.compare(
+
+                newPassword,
+
+                rows[0].password
+
+            );
+
+        if (
+            samePassword
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "New password must be different from the previous password."
+
+            });
+
+        }
+
+        const hashedPassword =
+            await bcrypt.hash(
+
+                newPassword,
+
+                10
+
+            );
+
+        await db.query(
+
+            `
+            UPDATE students
+            SET password = ?
+            WHERE id = ?
+            `,
+
+            [
+
+                hashedPassword,
+
+                memberId
+
+            ]
+
+        );
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "Password reset successfully."
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Failed to reset password."
+
+        });
+
+    }
+
+};
+
 const getProfile =
 async (
     req,
@@ -441,13 +1053,12 @@ async (
 module.exports = {
 
     loginMember,
-
     changeUserPassword,
-
+    sendMemberOTP,
+    verifyMemberOTP,
+    resetMemberPassword,
     getProfile,
-
     getMyIssues,
-
     getMyTransactions
 
 };

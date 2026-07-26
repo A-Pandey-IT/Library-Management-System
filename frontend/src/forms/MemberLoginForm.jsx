@@ -1,8 +1,6 @@
 import { useState } from "react";
-import {
-    FaEye,
-    FaEyeSlash
-} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import api from "../services/api";
 
@@ -14,6 +12,8 @@ function MemberLoginForm({
     onSuccess
 
 }) {
+
+    const navigate = useNavigate();
 
     const [email, setEmail] =
         useState("");
@@ -225,6 +225,21 @@ function MemberLoginForm({
                     "Member Login"
                 }
 
+            </button>
+
+            <button
+                type="button"
+                onClick={() =>
+                    navigate("/member/forgot-password")
+                }
+                className="
+                    text-blue-600
+                    hover:underline
+                    text-sm
+                    mt-2
+                "
+            >
+                Forgot Password?
             </button>
 
         </form>

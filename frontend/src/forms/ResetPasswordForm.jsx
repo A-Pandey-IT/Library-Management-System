@@ -2,119 +2,105 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-function ResetPasswordForm() {
-
+function ResetPasswordForm({ userType = "admin" }) {
     const navigate = useNavigate();
 
+    const baseEndpoint =
+        userType === "member"
+            ? "/member"
+            : "/admin";
+
+    const loginRoute =
+        userType === "member"
+            ? "/member/login"
+            : "/";
+
+    const forgotPasswordRoute =
+        userType === "member"
+            ? "/member/forgot-password"
+            : "/forgot-password";
+
     const [newPassword, setNewPassword] = useState("");
-
     const [confirmPassword, setConfirmPassword] = useState("");
-
     const [loading, setLoading] = useState(false);
-
     const [error, setError] = useState("");
-
     const [success, setSuccess] = useState("");
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
 
         setLoading(true);
-
         setError("");
-
         setSuccess("");
 
         const token = sessionStorage.getItem("resetToken");
 
-        if(!token){
+        if (!token) {
             setError("Reset session expired. Please verify OTP again.");
             setLoading(false);
+
             setTimeout(() => {
-                navigate("/forgot-password");
+                navigate(forgotPasswordRoute);
             }, 1500);
-            
+
             return;
         }
 
         try {
-
-            if(newPassword !== confirmPassword){
+            if (newPassword !== confirmPassword) {
                 setError("Passwords do not match.");
                 setLoading(false);
                 return;
             }
 
             const res = await api.put(
-                "/admin/reset-password",
+                `${baseEndpoint}/reset-password`,
                 {
-                    newPassword,
-                    confirmPassword
+                    newPassword: newPassword.trim(),
+                    confirmPassword: confirmPassword.trim(),
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
             );
 
             setSuccess(res.data.message);
 
-            sessionStorage.removeItem(
-                "resetToken"
-            );
+            sessionStorage.removeItem("resetToken");
 
             setTimeout(() => {
-
-                navigate("/");
-
+                navigate(loginRoute);
             }, 2000);
-
         } catch (err) {
-
             setError(
                 err.response?.data?.message ||
                 "Failed to reset password."
             );
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     return (
-
         <form
             onSubmit={handleSubmit}
             className="space-y-5"
         >
-
             {success && (
-
                 <p className="text-green-600 text-center">
-
                     {success}
-
                 </p>
-
             )}
 
             {error && (
-
                 <p className="text-red-600 text-center">
-
                     {error}
-
                 </p>
-
             )}
 
             <div>
-
                 <label
                     className="
                         block
@@ -132,9 +118,7 @@ function ResetPasswordForm() {
                     type="password"
                     value={newPassword}
                     onChange={(e) =>
-                        setNewPassword(
-                            e.target.value
-                        )
+                        setNewPassword(e.target.value)
                     }
                     placeholder="Enter new password"
                     required
@@ -152,11 +136,9 @@ function ResetPasswordForm() {
                         dark:text-white
                     "
                 />
-
             </div>
 
             <div>
-
                 <label
                     className="
                         block
@@ -174,9 +156,7 @@ function ResetPasswordForm() {
                     type="password"
                     value={confirmPassword}
                     onChange={(e) =>
-                        setConfirmPassword(
-                            e.target.value
-                        )
+                        setConfirmPassword(e.target.value)
                     }
                     placeholder="Confirm new password"
                     required
@@ -194,7 +174,6 @@ function ResetPasswordForm() {
                         dark:text-white
                     "
                 />
-
             </div>
 
             <button
@@ -212,17 +191,12 @@ function ResetPasswordForm() {
                     disabled:opacity-50
                 "
             >
-                {
-                    loading
-                        ? "Resetting..."
-                        : "Reset Password"
-                }
+                {loading
+                    ? "Resetting..."
+                    : "Reset Password"}
             </button>
-
         </form>
-
     );
-
 }
 
 export default ResetPasswordForm;

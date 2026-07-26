@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import DashboardPage from "./pages/DashboardPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import MemberForgotPasswordPage from "./pages/member/MemberForgotPasswordPage";
+import MemberResetPasswordPage from "./pages/member/MemberResetPasswordPage";
 
 import { Toaster } from "react-hot-toast";
 
@@ -70,8 +72,18 @@ function App() {
                 />
 
                 <Route
+                    path="/member/forgot-password"
+                    element={<MemberForgotPasswordPage />}
+                />
+
+                <Route
                     path="/reset-password"
                     element={<ResetPasswordPage />}
+                />
+
+                <Route
+                    path="/member/reset-password"
+                    element={<MemberResetPasswordPage />}
                 />
 
             </Routes>
