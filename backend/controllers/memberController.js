@@ -8,11 +8,11 @@ const crypto = require("crypto");
 
 const {
     sendOTPEmail
-} = require("../utils/emailService");
+} = require("../services/emailService");
 
 const {
     generateOTP
-} = require("../utils/generateOTP");
+} = require("../utils/otpGenerator");
 
 const {
     verifyResetToken
