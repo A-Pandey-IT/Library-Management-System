@@ -11,7 +11,8 @@ const {
 } = require("../services/emailService");
 
 const {
-    generateOTP
+    generateOTP,
+    getOTPExpiryTime
 } = require("../utils/otpGenerator");
 
 const {
