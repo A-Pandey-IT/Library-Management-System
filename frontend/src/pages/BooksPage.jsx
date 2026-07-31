@@ -467,7 +467,7 @@ function BooksPage({
                                                 {
                                                     label: "View Purchases",
                                                     onClick: () =>
-                                                        onViewIssueStatus?.(book)                                                
+                                                        onViewPurchase?.(book)                                                
                                                 }
                                             ]}
                                         />

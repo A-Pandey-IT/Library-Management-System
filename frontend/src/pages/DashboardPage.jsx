@@ -850,7 +850,7 @@ function DashboardPage({
 
                     setSelectedPurchase(null);
 
-                    setShowStudentPurchasesModal(true);
+                    setShowStudentPurchasesModal(false);
                 }}
             >
 
