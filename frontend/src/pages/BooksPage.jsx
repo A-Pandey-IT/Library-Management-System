@@ -12,7 +12,8 @@ import toast from "react-hot-toast";
 function BooksPage({
     onEditBook,
     onDeleteBook,
-    onViewHistory,
+    onViewIssueStatus,
+    onViewPurchase,
     refreshData
 }) {
 
@@ -458,9 +459,15 @@ function BooksPage({
                                                         onDeleteBook?.(book)
                                                 },
                                                 {
-                                                    label: "View History",
+                                                    label: "View Issue Status",
+                                                    onClick: () =>                                                        
+                                                        onViewIssueStatus?.(book)
+                                                },
+
+                                                {
+                                                    label: "View Purchases",
                                                     onClick: () =>
-                                                        onViewHistory?.(book)
+                                                        onViewIssueStatus?.(book)                                                
                                                 }
                                             ]}
                                         />

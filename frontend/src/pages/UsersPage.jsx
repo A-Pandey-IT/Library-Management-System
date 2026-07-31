@@ -9,7 +9,9 @@ function UsersPage({
     onIssueBook,
     onEditStudent,
     onDeleteStudent,
-    onViewHistory
+    
+onViewIssueStatus,
+    onViewPurchase
 }) {
 
     const [students,
@@ -263,9 +265,15 @@ function UsersPage({
                                                             onDeleteStudent?.(student)
                                                     },
                                                     {
-                                                        label: "View History",
+                                                        label: "View Issue Status",
                                                         onClick: () =>
-                                                            onViewHistory?.(student)
+                                                            
+                                                        onViewIssueStatus?.(student)
+                                                    },
+                                                    {
+                                                        label: "View Purchases",
+                                                        onClick: () =>
+                                                            onViewPurchase?.(student)
                                                     }
                                                 ]}
                                             />

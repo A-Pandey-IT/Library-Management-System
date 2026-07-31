@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 
+import BookPurchases from "../forms/BookPurchases";
+
+import StudentPurchases from "../forms/StudentPurchases";
+
 import AdminManagementPage from "./AdminManagementPage";
 import AddAdminForm from "../forms/AddAdminForm";
 
@@ -67,6 +71,16 @@ function DashboardPage({
     setRole
 
 }) {
+
+    const [
+    showBookPurchasesModal,
+        setShowBookPurchasesModal
+    ] = useState(false);
+
+    const [
+        showStudentPurchasesModal,
+        setShowStudentPurchasesModal
+    ] = useState(false);
 
     const forcePasswordChange =
         localStorage.getItem(
@@ -409,9 +423,15 @@ function DashboardPage({
                             setShowEditModal(true);
                         }}
 
-                        onViewHistory={(student) => {
+                        
+                        onViewIssueStatus={(student) => {
                             setSelectedStudent(student);
                             setShowHistoryModal(true);
+                        }}
+
+                        onViewPurchase={(student) => {
+                            setSelectedStudent(student);
+                            setShowStudentPurchasesModal(true);
                         }}
 
                         onDeleteStudent={handleDelete}
@@ -428,9 +448,15 @@ function DashboardPage({
                             setSelectedBook(book);
                             setShowEditBookModal(true);
                         }}
-                        onViewHistory={(book)=>{
+                        
+                        onViewIssueStatus={(book)=>{
                             setSelectedBook(book);
                             setShowBookHistoryModal(true);
+                        }}
+
+                        onViewPurchase={(book) => {
+                            setSelectedBook(book);
+                            setShowBookPurchasesModal(true);
                         }}
 
                         onDeleteBook={handleDeleteBook}
@@ -785,18 +811,46 @@ function DashboardPage({
 
             <Modal
                 isOpen={
+                    isLoggedIn &&
+                    showBookPurchasesModal
+                }
+                title="Book Purchases"
+                onClose={() => {
+
+                    setShowBookPurchasesModal(false);
+
+                    setSelectedBook(null);
+
+                }}
+            >
+
+                <BookPurchases
+                    book={selectedBook}
+                    onViewPurchase={(purchase) => {
+
+                        setShowBookPurchasesModal(false);
+
+                        setSelectedPurchase(purchase);
+
+                        setShowPurchaseDetails(true);
+
+                    }}
+                />
+
+            </Modal>
+
+            <Modal
+                isOpen={
                     showPurchaseDetails
                 }
                 title="Purchase Details"
                 onClose={() => {
 
-                    setShowPurchaseDetails(
-                        false
-                    );
+                    setShowPurchaseDetails(false);
 
-                    setSelectedPurchase(
-                        null
-                    );
+                    setSelectedPurchase(null);
+
+                    setShowStudentPurchasesModal(true);
                 }}
             >
 
@@ -804,6 +858,38 @@ function DashboardPage({
                     purchase={
                         selectedPurchase
                     }
+                />
+
+            </Modal>
+
+            <Modal
+                isOpen={
+                    isLoggedIn &&
+                    showStudentPurchasesModal
+                }
+                title="Student Purchases"
+                onClose={() => {
+
+                    setShowStudentPurchasesModal(false);
+
+                    setSelectedStudent(null);
+
+                }}
+            >
+
+                <StudentPurchases
+                    student={selectedStudent}
+                    onViewPurchase={(purchase) => {
+
+                        setShowStudentPurchasesModal(false);
+
+                        setSelectedStudent(null);
+
+                        setSelectedPurchase(purchase);
+
+                        setShowPurchaseDetails(true);
+
+                    }}
                 />
 
             </Modal>
